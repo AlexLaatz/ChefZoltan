@@ -41,6 +41,10 @@
   <div id="macroFilterPanel" class="macro-panel">
     <div class="macro-panel-row">
       <div class="macro-slider-group">
+        <label for="calMin">Calories (min) <span id="calMinLabel">any</span></label>
+        <input type="range" id="calMin" min="0" max="1500" step="50" value="0">
+      </div>
+      <div class="macro-slider-group">
         <label for="calMax">Calories (max) <span id="calMaxLabel">any</span></label>
         <input type="range" id="calMax" min="0" max="1500" step="50" value="1500">
       </div>
@@ -48,9 +52,27 @@
         <label for="proteinMin">Protein (min) <span id="proteinMinLabel">any</span></label>
         <input type="range" id="proteinMin" min="0" max="70" step="1" value="0">
       </div>
+    </div>
+    <div class="macro-panel-row">
+      <div class="macro-slider-group macro-slider-group-directional">
+        <label for="carbThreshold">
+          Carbs
+          <span class="macro-dir-toggle" id="carbDirToggle" role="button" tabindex="0" aria-label="Toggle carbs under/over">under</span>
+          <span id="carbThresholdLabel">any</span>
+        </label>
+        <input type="range" id="carbThreshold" min="0" max="150" step="5" value="150">
+      </div>
+      <div class="macro-slider-group macro-slider-group-directional">
+        <label for="fatThreshold">
+          Fat
+          <span class="macro-dir-toggle" id="fatDirToggle" role="button" tabindex="0" aria-label="Toggle fat under/over">under</span>
+          <span id="fatThresholdLabel">any</span>
+        </label>
+        <input type="range" id="fatThreshold" min="0" max="100" step="5" value="100">
+      </div>
       <button id="macroFilterReset" class="tool-btn tool-btn-ghost" type="button">Reset</button>
     </div>
-    <p class="macro-panel-note">Only applies to recipes with a parseable per-serving calorie/protein figure; recipes listed per-gram or without macros aren't affected by these filters.</p>
+    <p class="macro-panel-note">All active sliders apply together (a recipe must satisfy every one). Only applies to recipes with a parseable per-serving figure for that macro; recipes listed per-gram or without macros aren't affected by the corresponding filter. Click "under"/"over" next to Carbs or Fat to flip the direction of that slider.</p>
   </div>
 
   <section id="grid" class="grid"></section>
@@ -378,8 +400,8 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
     notes: "Calorie estimate is per baked empanada: one Goya empanada dough disc (~90 cal) plus a 15g portion of the beef-pea filling (~28 cal). Actual ground beef fat content and how much fat is drained will shift this."
   },
   { title: "Pigs in a Blanket", category: "Entrees",
-    time: "13 min bake (plus prep)", calories: "90 cal per piece",
-    macros: { protein: 3, carbs: 6, fat: 6 },
+    time: "13 min bake (plus prep)", calories: "540 cal per serving (6 pieces), 90 cal per piece",
+    macros: { protein: 18, carbs: 36, fat: 36 },
     image: "image/piggy-in-blanket.jpeg",
     ingredients: [
       "8 hot dogs",
@@ -577,10 +599,10 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
     notes: "To reheat: add a little shredded cheese between the layers before microwaving for 1 minute, or air fry at 370°F for 4 minutes, flip, then 2 more minutes. Serve with red or green salsa."
   },
   { title: "Chicken and Rice with Soy Sauce", category: "Entrees",
-    time: "~15 min", calories: "~1030 cal (est.) for the full recipe, serves ~2, ~515g per serving",
-    macros: { protein: 33, carbs: 63, fat: 27 },
+    time: "~15 min", calories: "~755 cal (est.) for the full recipe, serves ~2, ~378g per serving",
+    macros: { protein: 24, carbs: 63, fat: 18 },
     ingredients: [
-      "300g Kirkland Signature breaded chicken nuggets (frozen)",
+      "200g Kirkland Signature breaded chicken nuggets (frozen)",
       "1/3 cup dry rice",
       "2/3 cup water",
       "Soy sauce, for drizzling"
@@ -597,7 +619,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
       "In a bowl, add the rice, then the chicken on top.",
       "Drizzle a generous amount of soy sauce over the top."
     ],
-    notes: "Calorie estimate combines 1/3 cup dry rice cooked (~243 cal) and 300g Kirkland Signature breaded chicken nuggets (~710 cal, based on the standard label of 210 cal per 89g, scaled up), plus a generous soy sauce drizzle (~30-50 cal depending on how much you pour, estimated at ~40 cal here). Total splits to roughly 515 cal per serving across 2 servings. The soy sauce amount is the roughest part of this estimate since 'generous drizzle' isn't a fixed quantity — let me know if you want it pinned to a specific tablespoon amount instead."
+    notes: "Calorie estimate combines 1/3 cup dry rice cooked (~243 cal) and 200g Kirkland Signature breaded chicken nuggets (~472 cal, based on the standard label of 210 cal per 89g, scaled up), plus a generous soy sauce drizzle (~30-50 cal depending on how much you pour, estimated at ~40 cal here). Total splits to roughly 378 cal per serving across 2 servings. The soy sauce amount is the roughest part of this estimate since 'generous drizzle' isn't a fixed quantity — let me know if you want it pinned to a specific tablespoon amount instead."
   },
   { title: "Toasted Turkey Egg & Cheese Sandwich", category: "Sandwiches",
     time: "~8 min", calories: "500 cal per sandwich",
@@ -748,7 +770,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
     ]
   },
   { title: "Gulyás Leves", category: "Soups",
-    time: "~1 hr", calories: "0.70 cal/gram (e.g. a 350g bowl ≈ 245 cal)",
+    time: "~1 hr", calories: "245 cal per 350g bowl (0.70 cal/gram)",
     macros: { protein: 18, carbs: 20, fat: 12 },
     image: "image/gulyas.jpeg",
     ingredients: [
@@ -920,8 +942,8 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
     ]
   },
   { title: "Baked Beans", category: "Sides",
-    time: "2 min", calories: "~600 cal (est.) per 2-cup serving, ~550g",
-    macros: { protein: 13, carbs: 100, fat: 3 },
+    time: "2 min", calories: "~300 cal (est.) per 1-cup serving, ~275g",
+    macros: { protein: 7, carbs: 50, fat: 2 },
     image: "image/baked-beans.jpeg",
     ingredients: [
       "1 can baked beans (2 cups)",
@@ -933,7 +955,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
       "Mix.",
       "Microwave 2 cups for 2 minutes, stirring halfway through."
     ],
-    notes: "Calorie estimate based on standard canned baked beans (~140 cal per ½ cup) plus a ketchup squeeze (~40 cal). Actual brand and can size will shift this."
+    notes: "Calorie estimate based on standard canned baked beans (~140 cal per ½ cup, so ~280 cal per 1-cup serving) plus a smaller ketchup drizzle scaled to that portion (~20 cal). Actual brand and can size will shift this."
   },
   { title: "Asparagus", category: "Sides",
     time: "~10 min", calories: "~20 cal (est.) per serving (5 spears, ~100g)",
@@ -1013,8 +1035,8 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
     notes: "The box's standard directions call for 2/3 cup water; this version replaces half of that with 1/3 cup blueberry juice (from the can of blueberries in the mix) and keeps the other 1/3 cup as water. Calorie estimate is a 2-muffin serving: base muffins (mix + oil + egg + water, ~250 cal for 2, per the Krusteaz label), plus about 1 tbsp butter spread across them (~102 cal) and 1 cup of milk (~150 cal), for roughly 500 cal total. The blueberry-juice swap isn't reflected in the label figure, but the calorie difference versus plain water is minor. Adjust the milk and butter amounts to match what you actually use."
   },
   { title: "Brownies", category: "Dessert",
-    time: "47 min bake", calories: "4.8 cal/gram",
-    macros: { protein: "0.05/g", carbs: "0.62/g", fat: "0.22/g" },
+    time: "47 min bake", calories: "~240 cal per 50g brownie (4.8 cal/gram)",
+    macros: { protein: 3, carbs: 31, fat: 11 },
     ingredients: [
       "1 pouch Ghirardelli Double Chocolate Brownie Mix",
       "⅓ cup vegetable oil",
@@ -1048,8 +1070,8 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
 
   // ---------- DRINKS ----------
   { title: "Protein Smoothie", category: "Drinks",
-    time: "5 min", calories: "1340 cal (156g carbs / 53g fat / 65.5g protein), 1 serving",
-    macros: { protein: 65.5, carbs: 156, fat: 53 },
+    time: "5 min", calories: "~335 cal per 1-cup serving (¼ of recipe); 1340 cal for the full blender batch",
+    macros: { protein: 16.4, carbs: 39, fat: 13.25 },
     ingredients: [
       "40g Quaker Rolled Oats",
       "1 pouch Rader Farms Fresh Start frozen fruit blend",
@@ -1244,47 +1266,89 @@ function categoryCount(cat){
 // ============================================
 
 function parseCaloriesNumber(r){
-  // Only handles per-serving absolute calorie figures (e.g. "~625 cal", "500 cal per sandwich").
-  // Explicitly excludes per-gram figures (e.g. "4.8 cal/gram") since those aren't comparable
-  // to a per-serving threshold without knowing serving weight.
+  // Only handles per-serving absolute calorie figures (e.g. "~625 cal", "500 cal per sandwich",
+  // "245 cal per 350g bowl (0.70 cal/gram)"). Excludes fields where a per-gram figure is the
+  // PRIMARY (leading) value, since that's not a per-serving amount without knowing serving weight
+  // — but a per-gram figure mentioned parenthetically after a primary per-serving number is fine
+  // to ignore, since the leading match already captures the per-serving figure.
   if(!r.calories) return null;
-  if(/cal\s*\/\s*g|cal\/gram|per gram/i.test(r.calories)) return null;
+  if(/^\s*[\d.]+\s*cal\s*\/\s*g|^\s*[\d.]+\s*cal\s*\/\s*gram|^\s*[\d.]+\s*cal\/gram/i.test(r.calories)) return null;
   const m = r.calories.match(/([\d,]+)\s*cal/i);
   if(!m) return null;
   return Number(m[1].replace(/,/g, ''));
 }
 
-function parseProteinGrams(r){
-  if(!r.macros || r.macros.protein === undefined) return null;
-  const p = r.macros.protein;
-  if(typeof p === 'number') return p;
-  if(typeof p === 'string' && p.includes('/g')) return null; // per-gram figures aren't a per-serving amount
-  const n = parseFloat(p);
+function parseMacroGrams(macroVal){
+  // Handles numeric macros (e.g. 34) and rejects per-gram string macros (e.g. "0.05/g"),
+  // since those aren't a per-serving amount comparable to a fixed threshold.
+  if(macroVal === undefined || macroVal === null) return null;
+  if(typeof macroVal === 'number') return macroVal;
+  if(typeof macroVal === 'string' && macroVal.includes('/g')) return null;
+  const n = parseFloat(macroVal);
   return Number.isNaN(n) ? null : n;
 }
 
-let macroFilters = { calMax: 1500, proteinMin: 0 };
+function parseProteinGrams(r){
+  if(!r.macros) return null;
+  return parseMacroGrams(r.macros.protein);
+}
+
+function parseCarbGrams(r){
+  if(!r.macros) return null;
+  return parseMacroGrams(r.macros.carbs);
+}
+
+function parseFatGrams(r){
+  if(!r.macros) return null;
+  return parseMacroGrams(r.macros.fat);
+}
+
+let macroFilters = {
+  calMin: 0, calMax: 1500,
+  proteinMin: 0,
+  carbThreshold: 150, carbDir: 'under',
+  fatThreshold: 100, fatDir: 'under'
+};
 
 function passesMacroFilters(r){
-  const { calMax, proteinMin } = macroFilters;
+  const { calMin, calMax, proteinMin, carbThreshold, carbDir, fatThreshold, fatDir } = macroFilters;
+  const calMinActive = calMin > 0;
   const calMaxActive = calMax < 1500;
   const proteinMinActive = proteinMin > 0;
-  if(!calMaxActive && !proteinMinActive) return true;
-  const cal = parseCaloriesNumber(r);
-  const protein = parseProteinGrams(r);
-  if(calMaxActive){
-    if(cal === null) return false; // can't confirm it fits, so exclude while filter is active
-    if(cal > calMax) return false;
+  const carbActive = carbDir === 'under' ? carbThreshold < 150 : carbThreshold > 0;
+  const fatActive = fatDir === 'under' ? fatThreshold < 100 : fatThreshold > 0;
+
+  if(!calMinActive && !calMaxActive && !proteinMinActive && !carbActive && !fatActive) return true;
+
+  if(calMinActive || calMaxActive){
+    const cal = parseCaloriesNumber(r);
+    if(cal === null) return false; // can't confirm it fits, so exclude while a calorie filter is active
+    if(calMinActive && cal < calMin) return false;
+    if(calMaxActive && cal > calMax) return false;
   }
   if(proteinMinActive){
+    const protein = parseProteinGrams(r);
     if(protein === null) return false;
     if(protein < proteinMin) return false;
+  }
+  if(carbActive){
+    const carbs = parseCarbGrams(r);
+    if(carbs === null) return false;
+    if(carbDir === 'under' ? carbs > carbThreshold : carbs < carbThreshold) return false;
+  }
+  if(fatActive){
+    const fat = parseFatGrams(r);
+    if(fat === null) return false;
+    if(fatDir === 'under' ? fat > fatThreshold : fat < fatThreshold) return false;
   }
   return true;
 }
 
 function macroFiltersActive(){
-  return macroFilters.calMax < 1500 || macroFilters.proteinMin > 0;
+  const { calMin, calMax, proteinMin, carbThreshold, carbDir, fatThreshold, fatDir } = macroFilters;
+  const carbActive = carbDir === 'under' ? carbThreshold < 150 : carbThreshold > 0;
+  const fatActive = fatDir === 'under' ? fatThreshold < 100 : fatThreshold > 0;
+  return calMin > 0 || calMax < 1500 || proteinMin > 0 || carbActive || fatActive;
 }
 
 // ============================================
@@ -1718,10 +1782,18 @@ search.addEventListener('input', renderGrid);
 // ---------- Macro filter panel ----------
 const macroFilterToggle = document.getElementById('macroFilterToggle');
 const macroFilterPanel = document.getElementById('macroFilterPanel');
+const calMinSlider = document.getElementById('calMin');
 const calMaxSlider = document.getElementById('calMax');
 const proteinMinSlider = document.getElementById('proteinMin');
+const carbThresholdSlider = document.getElementById('carbThreshold');
+const fatThresholdSlider = document.getElementById('fatThreshold');
+const calMinLabel = document.getElementById('calMinLabel');
 const calMaxLabel = document.getElementById('calMaxLabel');
 const proteinMinLabel = document.getElementById('proteinMinLabel');
+const carbThresholdLabel = document.getElementById('carbThresholdLabel');
+const fatThresholdLabel = document.getElementById('fatThresholdLabel');
+const carbDirToggle = document.getElementById('carbDirToggle');
+const fatDirToggle = document.getElementById('fatDirToggle');
 const macroFilterReset = document.getElementById('macroFilterReset');
 const macroFilterBadge = document.getElementById('macroFilterBadge');
 
@@ -1733,8 +1805,18 @@ function updateMacroBadge(){
   } else {
     macroFilterBadge.style.display = 'inline';
     const parts = [];
-    if(macroFilters.calMax < 1500) parts.push(`≤${macroFilters.calMax}cal`);
+    if(macroFilters.calMin > 0 && macroFilters.calMax < 1500){
+      parts.push(`${macroFilters.calMin}-${macroFilters.calMax}cal`);
+    } else if(macroFilters.calMin > 0){
+      parts.push(`≥${macroFilters.calMin}cal`);
+    } else if(macroFilters.calMax < 1500){
+      parts.push(`≤${macroFilters.calMax}cal`);
+    }
     if(macroFilters.proteinMin > 0) parts.push(`≥${macroFilters.proteinMin}g P`);
+    const carbActive = macroFilters.carbDir === 'under' ? macroFilters.carbThreshold < 150 : macroFilters.carbThreshold > 0;
+    if(carbActive) parts.push(`${macroFilters.carbDir === 'under' ? '≤' : '≥'}${macroFilters.carbThreshold}g C`);
+    const fatActive = macroFilters.fatDir === 'under' ? macroFilters.fatThreshold < 100 : macroFilters.fatThreshold > 0;
+    if(fatActive) parts.push(`${macroFilters.fatDir === 'under' ? '≤' : '≥'}${macroFilters.fatThreshold}g F`);
     macroFilterBadge.textContent = parts.join(' · ');
   }
 }
@@ -1742,6 +1824,13 @@ function updateMacroBadge(){
 macroFilterToggle.onclick = () => {
   macroFilterPanel.classList.toggle('open');
 };
+
+calMinSlider.addEventListener('input', () => {
+  macroFilters.calMin = Number(calMinSlider.value);
+  calMinLabel.textContent = macroFilters.calMin <= 0 ? 'any' : `${macroFilters.calMin} cal`;
+  updateMacroBadge();
+  renderGrid();
+});
 
 calMaxSlider.addEventListener('input', () => {
   macroFilters.calMax = Number(calMaxSlider.value);
@@ -1757,12 +1846,84 @@ proteinMinSlider.addEventListener('input', () => {
   renderGrid();
 });
 
+function updateCarbLabel(){
+  const active = macroFilters.carbDir === 'under' ? macroFilters.carbThreshold < 150 : macroFilters.carbThreshold > 0;
+  carbThresholdLabel.textContent = active ? `${macroFilters.carbThreshold}g` : 'any';
+}
+function updateFatLabel(){
+  const active = macroFilters.fatDir === 'under' ? macroFilters.fatThreshold < 100 : macroFilters.fatThreshold > 0;
+  fatThresholdLabel.textContent = active ? `${macroFilters.fatThreshold}g` : 'any';
+}
+
+carbThresholdSlider.addEventListener('input', () => {
+  macroFilters.carbThreshold = Number(carbThresholdSlider.value);
+  updateCarbLabel();
+  updateMacroBadge();
+  renderGrid();
+});
+
+fatThresholdSlider.addEventListener('input', () => {
+  macroFilters.fatThreshold = Number(fatThresholdSlider.value);
+  updateFatLabel();
+  updateMacroBadge();
+  renderGrid();
+});
+
+function toggleCarbDir(){
+  macroFilters.carbDir = macroFilters.carbDir === 'under' ? 'over' : 'under';
+  carbDirToggle.textContent = macroFilters.carbDir;
+  // Flipping direction with the slider parked at its "inactive" end would
+  // silently keep the filter off; reset to the opposite inactive end so the
+  // toggle itself never activates a filter the person didn't touch.
+  if(macroFilters.carbDir === 'under' && macroFilters.carbThreshold === 0){
+    macroFilters.carbThreshold = 150;
+    carbThresholdSlider.value = 150;
+  } else if(macroFilters.carbDir === 'over' && macroFilters.carbThreshold === 150){
+    macroFilters.carbThreshold = 0;
+    carbThresholdSlider.value = 0;
+  }
+  updateCarbLabel();
+  updateMacroBadge();
+  renderGrid();
+}
+function toggleFatDir(){
+  macroFilters.fatDir = macroFilters.fatDir === 'under' ? 'over' : 'under';
+  fatDirToggle.textContent = macroFilters.fatDir;
+  if(macroFilters.fatDir === 'under' && macroFilters.fatThreshold === 0){
+    macroFilters.fatThreshold = 100;
+    fatThresholdSlider.value = 100;
+  } else if(macroFilters.fatDir === 'over' && macroFilters.fatThreshold === 100){
+    macroFilters.fatThreshold = 0;
+    fatThresholdSlider.value = 0;
+  }
+  updateFatLabel();
+  updateMacroBadge();
+  renderGrid();
+}
+carbDirToggle.addEventListener('click', toggleCarbDir);
+carbDirToggle.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleCarbDir(); } });
+fatDirToggle.addEventListener('click', toggleFatDir);
+fatDirToggle.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleFatDir(); } });
+
 macroFilterReset.onclick = () => {
-  macroFilters = { calMax: 1500, proteinMin: 0 };
+  macroFilters = {
+    calMin: 0, calMax: 1500,
+    proteinMin: 0,
+    carbThreshold: 150, carbDir: 'under',
+    fatThreshold: 100, fatDir: 'under'
+  };
+  calMinSlider.value = 0;
   calMaxSlider.value = 1500;
   proteinMinSlider.value = 0;
+  carbThresholdSlider.value = 150;
+  fatThresholdSlider.value = 100;
+  calMinLabel.textContent = 'any';
   calMaxLabel.textContent = 'any';
   proteinMinLabel.textContent = 'any';
+  carbDirToggle.textContent = 'under';
+  fatDirToggle.textContent = 'under';
+  updateCarbLabel();
+  updateFatLabel();
   updateMacroBadge();
   renderGrid();
 };
@@ -1991,6 +2152,7 @@ main{
   color: var(--stone-mid);
   text-transform: uppercase;
   display:flex;
+  align-items: center;
   justify-content: space-between;
 }
 .macro-slider-group label span{
@@ -2030,6 +2192,29 @@ main{
   color: var(--stone-mid);
   margin: 12px 2px 0;
   line-height: 1.5;
+}
+.macro-slider-group-directional label{
+  gap: 6px;
+}
+.macro-dir-toggle{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brass);
+  border: 1px solid var(--brass);
+  border-radius: 100px;
+  padding: 1px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.macro-dir-toggle:hover{
+  background: var(--brass);
+  color: #18191B;
+}
+.macro-dir-toggle:focus-visible{
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
 }
 
 .grid{
