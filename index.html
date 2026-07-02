@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chef Zoltán — Recipes</title>
+<title>Chef Zoltán</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -25,7 +25,6 @@
   <div class="hero-slab">
     <p class="eyebrow">RECIPE COLLECTION</p>
     <h1>Chef Zoltán</h1>
-    <p class="hero-sub"></p>
   </div>
 </header>
 
@@ -38,9 +37,6 @@
   <section id="grid" class="grid"></section>
 </main>
 
-<footer>
-  <p></p>
-</footer>
 
 <div class="overlay" id="overlay">
   <div class="detail" id="detail"></div>
@@ -134,11 +130,7 @@ const RECIPES = [
   { title: "Tea", category: "Drinks", ...placeholder() },
 
   // ---------- SAUCES / EXTRAS ----------
-  { title: "Cane's Sauce", category: "Sauces/Extras", ...placeholder() },
-
-  // ---------- WANT TO LEARN ----------
-  { title: "Dim Sum (Steamed Chinese)", category: "Want to Learn", ...placeholder() },
-  { title: "Currywurst", category: "Want to Learn", ...placeholder() }
+  { title: "Cane's Sauce", category: "Sauces/Extras", ...placeholder() }
 ];
 
 /* ============================================
@@ -344,11 +336,6 @@ body{
   margin: 0;
   letter-spacing: -0.02em;
 }
-.hero-sub{
-  color: var(--stone-mid);
-  font-size: 17px;
-  margin: 14px 0 0;
-}
 
 main{
   max-width: 1100px;
@@ -485,14 +472,6 @@ main{
   text-align:center;
   color: var(--stone-mid);
   padding: 60px 0;
-}
-
-footer{
-  text-align:center;
-  padding: 30px;
-  color: var(--stone-mid);
-  font-size: 13px;
-  font-family:'IBM Plex Mono', monospace;
 }
 
 .overlay{
