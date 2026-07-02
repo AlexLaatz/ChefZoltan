@@ -44,34 +44,11 @@
 
 <script>
 
-/* ============================================
-   RECIPE DATA — edit / copy-paste here
-   ============================================
-   TEMPLATE (copy this whole block to add a recipe):
-
-   {
-     title: "Recipe Name",
-     category: "Dinner",
-     time: "30 min",
-     serves: "2",
-     image: "https://images.unsplash.com/photo-XXXX",
-     ingredients: [
-       "1 cup flour",
-       "2 eggs"
-     ],
-     steps: [
-       "Do the first thing.",
-       "Do the second thing."
-     ],
-     notes: "Any tips or swaps go here."
-   },
-
-   ============================================ */
 
 function placeholder(){
   return {
     time: "—",
-    serves: "—",
+    calories: "—",
     ingredients: ["Add ingredients here"],
     steps: ["Add steps here"]
   };
@@ -138,7 +115,7 @@ const RECIPES = [
    (replace one of the placeholder ones, or add new):
 
    { title: "Recipe Name", category: "Entrees",
-     time: "30 min", serves: "2",
+     time: "30 min", calories: "450",
      ingredients: ["1 cup flour", "2 eggs"],
      steps: ["Do the first thing.", "Do the second thing."],
      notes: "Optional tip here." },
@@ -226,7 +203,7 @@ function renderGrid(){
         <div class="card-meta">
           <span>${r.time}</span>
           <span>·</span>
-          <span>Serves ${r.serves}</span>
+          <span>${r.calories} cal</span>
         </div>
       </div>
     `;
@@ -250,7 +227,7 @@ function openDetail(idx){
       <div class="card-meta">
         <span>${r.time}</span>
         <span>·</span>
-        <span>Serves ${r.serves}</span>
+        <span>${r.calories} cal</span>
       </div>
       <div class="detail-columns">
         <div>
