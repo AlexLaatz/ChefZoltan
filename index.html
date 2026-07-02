@@ -32,10 +32,47 @@
   <div class="toolbar">
     <input id="search" type="text" placeholder="Search recipes or ingredients…" />
     <div class="filters" id="filters"></div>
+    <div class="toolbar-actions">
+      <button id="macroFilterToggle" class="tool-btn" type="button">Macros <span id="macroFilterBadge" class="tool-badge" style="display:none;"></span></button>
+      <button id="shoppingListToggle" class="tool-btn" type="button">Shopping List <span id="shoppingListBadge" class="tool-badge" style="display:none;"></span></button>
+    </div>
+  </div>
+
+  <div id="macroFilterPanel" class="macro-panel">
+    <div class="macro-panel-row">
+      <div class="macro-slider-group">
+        <label for="calMax">Calories (max) <span id="calMaxLabel">any</span></label>
+        <input type="range" id="calMax" min="0" max="1500" step="50" value="1500">
+      </div>
+      <div class="macro-slider-group">
+        <label for="proteinMin">Protein (min) <span id="proteinMinLabel">any</span></label>
+        <input type="range" id="proteinMin" min="0" max="70" step="1" value="0">
+      </div>
+      <button id="macroFilterReset" class="tool-btn tool-btn-ghost" type="button">Reset</button>
+    </div>
+    <p class="macro-panel-note">Only applies to recipes with a parseable per-serving calorie/protein figure; recipes listed per-gram or without macros aren't affected by these filters.</p>
   </div>
 
   <section id="grid" class="grid"></section>
 </main>
+
+<div class="overlay" id="shoppingListOverlay">
+  <div class="detail shopping-list-detail" id="shoppingListDetail">
+    <button class="close-btn" id="shoppingListCloseBtn" aria-label="Close">&times;</button>
+    <div class="detail-body">
+      <p class="card-cat">KITCHEN</p>
+      <h2>Shopping List</h2>
+      <div class="progress-row">
+        <span id="shoppingListCount" class="progress-indicator"></span>
+        <div class="progress-actions">
+          <button class="reset-btn" id="clearCheckedBtn" type="button">Clear checked</button>
+          <button class="reset-btn" id="clearAllBtn" type="button">Clear all</button>
+        </div>
+      </div>
+      <ul class="check-list shopping-list" id="shoppingListItems"></ul>
+    </div>
+  </div>
+</div>
 
 
 <div class="overlay" id="overlay">
@@ -52,6 +89,81 @@ function placeholder(){
     ingredients: ["Add ingredients here"],
     steps: ["Add steps here"]
   };
+}
+
+// ============================================
+// SERVING SCALER — best-effort quantity parsing
+// ------------------------------------------------
+// Ingredient strings are free text (e.g. "2 lbs 80/20 ground beef",
+// "1½ slices ham", "11–12 large eggs"). This parses a leading quantity
+// off the front of the string, scales it, and re-attaches the rest of
+// the text unchanged. Anything it can't confidently parse (ranges,
+// "to taste", non-numeric starts) is left completely as-is.
+// ============================================
+
+const UNICODE_FRACTIONS = { '½':0.5, '⅓':1/3, '⅔':2/3, '¼':0.25, '¾':0.75, '⅛':0.125, '⅜':0.375, '⅝':0.625, '⅞':0.875 };
+
+function parseLeadingQuantity(str){
+  // Skip ranges entirely (e.g. "11–12 large eggs", "30 min-2 hr") — scaling
+  // a range is ambiguous, so leave the original text untouched.
+  if(/^\d+\s*[–\-]\s*\d/.test(str)) return null;
+  // Matches things like: "2", "2.5", "1/3", "1 1/3", "1½", "2½", "300"
+  const m = str.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(\.\d+)?[½⅓⅔¼¾⅛⅜⅝⅞]?|[½⅓⅔¼¾⅛⅜⅝⅞])/);
+  if(!m) return null;
+  const token = m[1];
+  let value = 0;
+  if(/^\d+\s+\d+\/\d+$/.test(token)){
+    const [whole, frac] = token.split(/\s+/);
+    const [n, d] = frac.split('/').map(Number);
+    value = Number(whole) + (n / d);
+  } else if(/^\d+\/\d+$/.test(token)){
+    const [n, d] = token.split('/').map(Number);
+    value = n / d;
+  } else if(UNICODE_FRACTIONS[token] !== undefined){
+    value = UNICODE_FRACTIONS[token];
+  } else {
+    const fracChar = token.match(/[½⅓⅔¼¾⅛⅜⅝⅞]$/);
+    if(fracChar){
+      value = Number(token.slice(0, -1)) + UNICODE_FRACTIONS[fracChar[0]];
+    } else {
+      value = Number(token);
+    }
+  }
+  if(Number.isNaN(value)) return null;
+  // Preserve whether the original text had a space right after the number
+  // (e.g. "300g" vs "300 g") so scaling doesn't introduce/remove spacing.
+  const hadTrailingSpace = / $/.test(str.slice(0, m[0].length + 1).slice(0, -1)) || str[m[0].length] === ' ';
+  return { value, matchedLength: m[0].length, hadTrailingSpace: str[m[0].length] === ' ' };
+}
+
+function formatScaledQuantity(value){
+  // Round sensibly and prefer simple fractions for common cooking amounts
+  const rounded = Math.round(value * 1000) / 1000;
+  const whole = Math.floor(rounded);
+  const frac = rounded - whole;
+  const fracMap = [
+    [1/8, '⅛'], [1/4, '¼'], [1/3, '⅓'], [3/8, '⅜'],
+    [1/2, '½'], [5/8, '⅝'], [2/3, '⅔'], [3/4, '¾'], [7/8, '⅞']
+  ];
+  let closest = null;
+  for(const [f, sym] of fracMap){
+    if(Math.abs(frac - f) < 0.02){ closest = sym; break; }
+  }
+  if(closest){
+    return whole > 0 ? `${whole}${closest}` : closest;
+  }
+  if(Number.isInteger(rounded)) return String(rounded);
+  return String(Math.round(rounded * 100) / 100);
+}
+
+function scaleIngredientText(text, multiplier){
+  if(multiplier === 1) return text;
+  const parsed = parseLeadingQuantity(text);
+  if(!parsed) return text; // e.g. "Salt, to taste", "Water, for boiling", ranges
+  const scaled = parsed.value * multiplier;
+  const rest = text.slice(parsed.matchedLength);
+  const separator = parsed.hadTrailingSpace ? ' ' : '';
+  return formatScaledQuantity(scaled) + separator + rest.replace(/^ /, parsed.hadTrailingSpace ? '' : ' ');
 }
 
 const RECIPES = [
@@ -1069,10 +1181,165 @@ function speckleBackground(i){
   return layers.join(',');
 }
 
+// ============================================
+// PLACEHOLDER ART — abstract, on-brand pattern
+// ------------------------------------------------
+// Replaces the plain single-letter tile with a deterministic (per-recipe,
+// stable across reloads) arrangement of thin brass rings/lines plus the
+// initial, tinted subtly per category so categories are distinguishable
+// at a glance while staying minimal and consistent with the marble/brass
+// aesthetic used elsewhere on the site. Pure SVG, no external assets.
+// ============================================
+
+const CATEGORY_HUES = {
+  'Entrees': 42, 'Sandwiches': 200, 'Soups': 15, 'Sides': 95,
+  'Dessert': 330, 'Drinks': 260, 'Sauces/Extras': 165
+};
+
+function placeholderPattern(i, r){
+  const seed = speckleSeed(i);
+  const hue = CATEGORY_HUES[r.category] !== undefined ? CATEGORY_HUES[r.category] : 42;
+  const cx1 = (30 + seed[0]*40).toFixed(1);
+  const cy1 = (30 + seed[1]*40).toFixed(1);
+  const cx2 = (10 + seed[2]*80).toFixed(1);
+  const cy2 = (10 + seed[3]*80).toFixed(1);
+  const r1 = (18 + seed[4]*14).toFixed(1);
+  const r2 = (28 + seed[5]*20).toFixed(1);
+  const rot = (seed[6]*360).toFixed(0);
+  return `
+    <svg class="placeholder-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <radialGradient id="pg${i}" cx="50%" cy="50%" r="75%">
+          <stop offset="0%" stop-color="hsl(${hue},28%,16%)"/>
+          <stop offset="100%" stop-color="#0A0A0B"/>
+        </radialGradient>
+      </defs>
+      <rect width="100" height="100" fill="url(#pg${i})"/>
+      <g transform="rotate(${rot} 50 50)" opacity="0.55">
+        <circle cx="${cx1}" cy="${cy1}" r="${r1}" fill="none" stroke="hsl(${hue},35%,55%)" stroke-width="0.6"/>
+        <circle cx="${cx2}" cy="${cy2}" r="${r2}" fill="none" stroke="hsl(${hue},35%,55%)" stroke-width="0.4" opacity="0.6"/>
+      </g>
+      <text x="50" y="58" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="34" fill="hsl(${hue},45%,68%)" opacity="0.9">${r.title.charAt(0)}</text>
+    </svg>
+  `;
+}
+
 function categoryCount(cat){
   if(cat === 'All') return RECIPES.length;
   return RECIPES.filter(r => r.category === cat).length;
 }
+
+// ============================================
+// MACRO PARSING — best-effort extraction from
+// free-text calorie/macro fields for filtering
+// ============================================
+
+function parseCaloriesNumber(r){
+  // Only handles per-serving absolute calorie figures (e.g. "~625 cal", "500 cal per sandwich").
+  // Explicitly excludes per-gram figures (e.g. "4.8 cal/gram") since those aren't comparable
+  // to a per-serving threshold without knowing serving weight.
+  if(!r.calories) return null;
+  if(/cal\s*\/\s*g|cal\/gram|per gram/i.test(r.calories)) return null;
+  const m = r.calories.match(/([\d,]+)\s*cal/i);
+  if(!m) return null;
+  return Number(m[1].replace(/,/g, ''));
+}
+
+function parseProteinGrams(r){
+  if(!r.macros || r.macros.protein === undefined) return null;
+  const p = r.macros.protein;
+  if(typeof p === 'number') return p;
+  if(typeof p === 'string' && p.includes('/g')) return null; // per-gram figures aren't a per-serving amount
+  const n = parseFloat(p);
+  return Number.isNaN(n) ? null : n;
+}
+
+let macroFilters = { calMax: 1500, proteinMin: 0 };
+
+function passesMacroFilters(r){
+  const { calMax, proteinMin } = macroFilters;
+  const calMaxActive = calMax < 1500;
+  const proteinMinActive = proteinMin > 0;
+  if(!calMaxActive && !proteinMinActive) return true;
+  const cal = parseCaloriesNumber(r);
+  const protein = parseProteinGrams(r);
+  if(calMaxActive){
+    if(cal === null) return false; // can't confirm it fits, so exclude while filter is active
+    if(cal > calMax) return false;
+  }
+  if(proteinMinActive){
+    if(protein === null) return false;
+    if(protein < proteinMin) return false;
+  }
+  return true;
+}
+
+function macroFiltersActive(){
+  return macroFilters.calMax < 1500 || macroFilters.proteinMin > 0;
+}
+
+// ============================================
+// SHOPPING LIST — simple flat list, raw ingredient
+// text appended as-is (duplicates allowed), in-memory only
+// ============================================
+
+let shoppingList = []; // { id, text, recipeTitle, checked }
+let shoppingListIdCounter = 0;
+
+function addRecipeToShoppingList(recipeTitle, ingredientTexts){
+  ingredientTexts.forEach(text => {
+    shoppingList.push({ id: ++shoppingListIdCounter, text, recipeTitle, checked: false });
+  });
+  renderShoppingList();
+  updateShoppingListBadge();
+}
+
+function updateShoppingListBadge(){
+  const badge = document.getElementById('shoppingListBadge');
+  if(!badge) return;
+  if(shoppingList.length === 0){
+    badge.style.display = 'none';
+  } else {
+    badge.style.display = 'inline';
+    badge.textContent = shoppingList.length;
+  }
+}
+
+function renderShoppingList(){
+  const itemsEl = document.getElementById('shoppingListItems');
+  const countEl = document.getElementById('shoppingListCount');
+  if(!itemsEl) return;
+  if(shoppingList.length === 0){
+    itemsEl.innerHTML = '<p class="empty shopping-empty">Your list is empty. Open a recipe and tap "Add to shopping list" to get started.</p>';
+  } else {
+    itemsEl.innerHTML = shoppingList.map(item => `
+      <li class="check-item shopping-item ${item.checked ? 'checked' : ''}" data-id="${item.id}" tabindex="0" role="checkbox" aria-checked="${item.checked}">
+        <span class="check-box" aria-hidden="true"></span>
+        <span class="check-text">${item.text}<span class="shopping-source">from ${item.recipeTitle}</span></span>
+      </li>
+    `).join('');
+    itemsEl.querySelectorAll('.shopping-item').forEach(el => {
+      const toggle = () => {
+        const id = Number(el.dataset.id);
+        const item = shoppingList.find(x => x.id === id);
+        if(!item) return;
+        item.checked = !item.checked;
+        el.classList.toggle('checked', item.checked);
+        el.setAttribute('aria-checked', String(item.checked));
+      };
+      el.addEventListener('click', toggle);
+      el.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
+      });
+    });
+  }
+  if(countEl){
+    const checkedCount = shoppingList.filter(x => x.checked).length;
+    countEl.textContent = shoppingList.length === 0 ? '' : `${checkedCount}/${shoppingList.length} checked`;
+  }
+}
+
+
 
 function renderFilters(){
   filtersEl.innerHTML = '';
@@ -1111,11 +1378,15 @@ function renderGrid(){
     const matchesCategory = activeCategory === 'All' || r.category === activeCategory;
     const haystack = (r.title + ' ' + r.ingredients.join(' ') + ' ' + r.steps.join(' ') + ' ' + (r.notes || '')).toLowerCase();
     const matchesQuery = haystack.includes(query);
-    return matchesCategory && matchesQuery;
+    const matchesMacros = passesMacroFilters(r);
+    return matchesCategory && matchesQuery && matchesMacros;
   });
 
   if(filtered.length === 0){
-    grid.innerHTML = '<p class="empty">No recipes match yet. Try a different search.</p>';
+    const reason = macroFiltersActive()
+      ? 'No recipes match yet. Try loosening the macro filters or search.'
+      : 'No recipes match yet. Try a different search.';
+    grid.innerHTML = `<p class="empty">${reason}</p>`;
     return;
   }
 
@@ -1126,7 +1397,7 @@ function renderGrid(){
     card.style.setProperty('--speckle', speckleBackground(idx));
     const imageBlock = r.image
       ? `<div class="card-image" style="background-image:url('${r.image}')"></div>`
-      : `<div class="card-image card-image-empty"><span>${r.title.charAt(0)}</span></div>`;
+      : `<div class="card-image card-image-empty">${placeholderPattern(idx, r)}</div>`;
     const locs = matchLocations(r, query);
     const matchHint = (query && locs.length && !(locs.length === 1 && locs[0] === 'title'))
       ? `<p class="match-hint">matched in: ${locs.join(', ')}</p>`
@@ -1175,7 +1446,8 @@ function getChecklist(idx, r){
   if(!checklistState[idx]){
     checklistState[idx] = {
       ingredients: new Array(r.ingredients.length).fill(false),
-      steps: new Array(r.steps.length).fill(false)
+      steps: new Array(r.steps.length).fill(false),
+      scale: 1
     };
   }
   return checklistState[idx];
@@ -1237,9 +1509,10 @@ function updateProgress(idx){
 function openDetail(idx, triggerEl){
   const r = RECIPES[idx];
   const state = getChecklist(idx, r);
+  if(state.scale === undefined) state.scale = 1;
   const detailImage = r.image
     ? `<div class="detail-image" style="background-image:url('${r.image}')"></div>`
-    : `<div class="detail-image detail-image-empty"><span>${r.title.charAt(0)}</span></div>`;
+    : `<div class="detail-image detail-image-empty">${placeholderPattern(idx, r)}</div>`;
   const isLong = (r.ingredients.length + r.steps.length) > 16;
   detail.innerHTML = `
     <button class="close-btn" id="closeBtn" aria-label="Close">&times;</button>
@@ -1251,9 +1524,19 @@ function openDetail(idx, triggerEl){
         <span>${r.calories}</span>
         ${r.macros ? `<span class="macros">P ${r.macros.protein}${String(r.macros.protein).includes('/g') ? '' : 'g'} &nbsp;C ${r.macros.carbs}${String(r.macros.carbs).includes('/g') ? '' : 'g'} &nbsp;F ${r.macros.fat}${String(r.macros.fat).includes('/g') ? '' : 'g'}</span>` : ''}
       </div>
+      <div class="scale-row">
+        <span class="scale-label">Scale recipe</span>
+        <div class="scale-controls">
+          <button class="scale-btn" id="scaleDownBtn" type="button" aria-label="Halve amounts">&minus;</button>
+          <span class="scale-value" id="scaleValue">1x</span>
+          <button class="scale-btn" id="scaleUpBtn" type="button" aria-label="Double amounts">&plus;</button>
+          <button class="scale-reset-btn" id="scaleResetBtn" type="button">Reset</button>
+        </div>
+      </div>
       <div class="progress-row">
         <span id="progressIndicator" class="progress-indicator"></span>
         <div class="progress-actions">
+          <button class="reset-btn" id="addToListBtn" type="button">Add to shopping list</button>
           <button class="reset-btn" id="resetBtn" type="button">Reset checks</button>
           <button class="print-btn" id="printBtn" type="button">Print</button>
         </div>
@@ -1261,7 +1544,7 @@ function openDetail(idx, triggerEl){
       <div class="detail-columns">
         <div>
           <h4>Ingredients</h4>
-          <ul class="check-list" id="ingredientList">${renderChecklist(r.ingredients, state.ingredients, 'ingredients')}</ul>
+          <ul class="check-list" id="ingredientList">${renderChecklist(r.ingredients.map(t => scaleIngredientText(t, state.scale)), state.ingredients, 'ingredients')}</ul>
         </div>
         <div>
           <h4>Steps</h4>
@@ -1280,6 +1563,7 @@ function openDetail(idx, triggerEl){
   closeBtn.focus();
 
   updateProgress(idx);
+  updateScaleDisplay(idx);
 
   const toggleItem = (el) => {
     const kind = el.dataset.kind;
@@ -1301,6 +1585,48 @@ function openDetail(idx, triggerEl){
     });
   });
 
+  const SCALE_STEPS = [0.5, 1, 1.5, 2, 3];
+  const rerenderIngredients = () => {
+    const list = document.getElementById('ingredientList');
+    if(list){
+      list.innerHTML = renderChecklist(r.ingredients.map(t => scaleIngredientText(t, state.scale)), state.ingredients, 'ingredients');
+      list.querySelectorAll('.check-item').forEach(el => {
+        el.addEventListener('click', () => toggleItem(el));
+        el.addEventListener('keydown', (e) => {
+          if(e.key === 'Enter' || e.key === ' '){
+            e.preventDefault();
+            toggleItem(el);
+          }
+        });
+      });
+    }
+    updateScaleDisplay(idx);
+  };
+
+  const scaleDownBtn = document.getElementById('scaleDownBtn');
+  const scaleUpBtn = document.getElementById('scaleUpBtn');
+  const scaleResetBtn = document.getElementById('scaleResetBtn');
+  if(scaleDownBtn && scaleUpBtn){
+    scaleDownBtn.onclick = () => {
+      const i = SCALE_STEPS.indexOf(state.scale);
+      const nextIdx = i > 0 ? i - 1 : (i === -1 ? 1 : 0);
+      state.scale = SCALE_STEPS[Math.max(0, nextIdx)];
+      rerenderIngredients();
+    };
+    scaleUpBtn.onclick = () => {
+      const i = SCALE_STEPS.indexOf(state.scale);
+      const nextIdx = i > -1 ? i + 1 : SCALE_STEPS.length - 1;
+      state.scale = SCALE_STEPS[Math.min(SCALE_STEPS.length - 1, nextIdx)];
+      rerenderIngredients();
+    };
+  }
+  if(scaleResetBtn){
+    scaleResetBtn.onclick = () => {
+      state.scale = 1;
+      rerenderIngredients();
+    };
+  }
+
   const resetBtn = document.getElementById('resetBtn');
   if(resetBtn){
     resetBtn.onclick = () => {
@@ -1311,6 +1637,16 @@ function openDetail(idx, triggerEl){
         el.setAttribute('aria-checked', 'false');
       });
       updateProgress(idx);
+    };
+  }
+
+  const addToListBtn = document.getElementById('addToListBtn');
+  if(addToListBtn){
+    addToListBtn.onclick = () => {
+      const scaledIngredients = r.ingredients.map(t => scaleIngredientText(t, state.scale));
+      addRecipeToShoppingList(r.title, scaledIngredients);
+      addToListBtn.textContent = 'Added ✓';
+      setTimeout(() => { addToListBtn.textContent = 'Add to shopping list'; }, 1500);
     };
   }
 
@@ -1331,6 +1667,16 @@ function openDetail(idx, triggerEl){
   }
 
   requestWakeLock();
+}
+
+function updateScaleDisplay(idx){
+  const r = RECIPES[idx];
+  const state = getChecklist(idx, r);
+  const el = document.getElementById('scaleValue');
+  if(el){
+    const s = state.scale;
+    el.textContent = (Number.isInteger(s) ? s : s.toFixed(1)) + 'x';
+  }
 }
 
 function closeDetail(){
@@ -1358,6 +1704,98 @@ document.addEventListener('keydown', (e) => {
 
 overlay.onclick = (e) => { if(e.target === overlay) closeDetail(); };
 search.addEventListener('input', renderGrid);
+
+// ---------- Macro filter panel ----------
+const macroFilterToggle = document.getElementById('macroFilterToggle');
+const macroFilterPanel = document.getElementById('macroFilterPanel');
+const calMaxSlider = document.getElementById('calMax');
+const proteinMinSlider = document.getElementById('proteinMin');
+const calMaxLabel = document.getElementById('calMaxLabel');
+const proteinMinLabel = document.getElementById('proteinMinLabel');
+const macroFilterReset = document.getElementById('macroFilterReset');
+const macroFilterBadge = document.getElementById('macroFilterBadge');
+
+function updateMacroBadge(){
+  const active = macroFiltersActive();
+  macroFilterToggle.classList.toggle('tool-btn-active', active);
+  if(!active){
+    macroFilterBadge.style.display = 'none';
+  } else {
+    macroFilterBadge.style.display = 'inline';
+    const parts = [];
+    if(macroFilters.calMax < 1500) parts.push(`≤${macroFilters.calMax}cal`);
+    if(macroFilters.proteinMin > 0) parts.push(`≥${macroFilters.proteinMin}g P`);
+    macroFilterBadge.textContent = parts.join(' · ');
+  }
+}
+
+macroFilterToggle.onclick = () => {
+  macroFilterPanel.classList.toggle('open');
+};
+
+calMaxSlider.addEventListener('input', () => {
+  macroFilters.calMax = Number(calMaxSlider.value);
+  calMaxLabel.textContent = macroFilters.calMax >= 1500 ? 'any' : `${macroFilters.calMax} cal`;
+  updateMacroBadge();
+  renderGrid();
+});
+
+proteinMinSlider.addEventListener('input', () => {
+  macroFilters.proteinMin = Number(proteinMinSlider.value);
+  proteinMinLabel.textContent = macroFilters.proteinMin <= 0 ? 'any' : `${macroFilters.proteinMin}g`;
+  updateMacroBadge();
+  renderGrid();
+});
+
+macroFilterReset.onclick = () => {
+  macroFilters = { calMax: 1500, proteinMin: 0 };
+  calMaxSlider.value = 1500;
+  proteinMinSlider.value = 0;
+  calMaxLabel.textContent = 'any';
+  proteinMinLabel.textContent = 'any';
+  updateMacroBadge();
+  renderGrid();
+};
+
+// ---------- Shopping list overlay ----------
+const shoppingListOverlay = document.getElementById('shoppingListOverlay');
+const shoppingListToggle = document.getElementById('shoppingListToggle');
+const shoppingListCloseBtn = document.getElementById('shoppingListCloseBtn');
+const clearCheckedBtn = document.getElementById('clearCheckedBtn');
+const clearAllBtn = document.getElementById('clearAllBtn');
+
+function openShoppingList(){
+  renderShoppingList();
+  shoppingListOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeShoppingList(){
+  shoppingListOverlay.classList.remove('open');
+  if(!overlay.classList.contains('open')){
+    document.body.style.overflow = '';
+  }
+}
+
+shoppingListToggle.onclick = openShoppingList;
+shoppingListCloseBtn.onclick = closeShoppingList;
+shoppingListOverlay.onclick = (e) => { if(e.target === shoppingListOverlay) closeShoppingList(); };
+
+clearCheckedBtn.onclick = () => {
+  shoppingList = shoppingList.filter(item => !item.checked);
+  renderShoppingList();
+  updateShoppingListBadge();
+};
+clearAllBtn.onclick = () => {
+  shoppingList = [];
+  renderShoppingList();
+  updateShoppingListBadge();
+};
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && shoppingListOverlay.classList.contains('open')){
+    closeShoppingList();
+  }
+});
 
 renderFilters();
 renderGrid();
@@ -1449,6 +1887,38 @@ main{
 #search::placeholder{ color: var(--stone-mid); }
 
 .filters{ display:flex; gap:8px; flex-wrap:wrap; }
+.toolbar-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
+.tool-btn{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 8px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--stone-light);
+  background: var(--surface);
+  color: var(--stone-dark);
+  cursor:pointer;
+  transition: all 0.15s ease;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.tool-btn:hover{ border-color: var(--brass); color: var(--brass); }
+.tool-btn-active{
+  border-color: var(--brass);
+  color: var(--brass-dark);
+}
+.tool-btn-ghost{
+  background: transparent;
+}
+.tool-badge{
+  font-size: 10.5px;
+  background: var(--brass);
+  color: #18191B;
+  border-radius: 100px;
+  padding: 1px 7px;
+  font-weight: 600;
+}
 .filter-btn{
   font-family:'IBM Plex Mono', monospace;
   font-size: 12px;
@@ -1474,6 +1944,82 @@ main{
 }
 .filter-btn.active .filter-count{
   opacity: 0.55;
+}
+
+.macro-panel{
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.25s ease;
+  margin-bottom: 0;
+}
+.macro-panel.open{
+  max-height: 200px;
+  opacity: 1;
+  margin-bottom: 28px;
+}
+.macro-panel-row{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  align-items: flex-end;
+  background: var(--surface);
+  border: 1px solid var(--stone-light);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.macro-slider-group{
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 220px;
+}
+.macro-slider-group label{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  color: var(--stone-mid);
+  text-transform: uppercase;
+  display:flex;
+  justify-content: space-between;
+}
+.macro-slider-group label span{
+  color: var(--brass-dark);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.macro-slider-group input[type="range"]{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--stone-light);
+  outline: none;
+}
+.macro-slider-group input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brass);
+  cursor: pointer;
+  border: 2px solid #18191B;
+}
+.macro-slider-group input[type="range"]::-moz-range-thumb{
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brass);
+  cursor: pointer;
+  border: 2px solid #18191B;
+}
+.macro-panel-note{
+  font-size: 11.5px;
+  color: var(--stone-mid);
+  margin: 12px 2px 0;
+  line-height: 1.5;
 }
 
 .grid{
@@ -1528,26 +2074,13 @@ main{
   display:flex;
   align-items:center;
   justify-content:center;
-  background:
-    radial-gradient(circle at 20% 30%, rgba(232,226,214,0.08) 0px, transparent 3px),
-    radial-gradient(circle at 70% 60%, rgba(232,226,214,0.06) 0px, transparent 2px),
-    radial-gradient(circle at 45% 80%, rgba(0,0,0,0.15) 0px, transparent 3px),
-    radial-gradient(circle at 85% 20%, rgba(0,0,0,0.12) 0px, transparent 2px),
-    #0A0A0B !important;
+  background: #0A0A0B !important;
+  overflow: hidden;
 }
-.card-image-empty span{
-  font-family:'Space Grotesk', sans-serif;
-  font-size: 44px;
-  font-weight:700;
-  color: var(--brass);
-  opacity:0.85;
-}
-.detail-image-empty span{
-  font-family:'Space Grotesk', sans-serif;
-  font-size: 64px;
-  font-weight:700;
-  color: var(--brass);
-  opacity:0.85;
+.placeholder-svg{
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 .card-body{ padding: 16px 18px 20px; }
 .card-cat{
@@ -1653,6 +2186,82 @@ main{
   border-color: var(--brass);
   color: var(--brass);
 }
+
+.scale-row{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+.scale-label{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--brass-dark);
+}
+.scale-controls{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+.scale-btn{
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--stone-light);
+  background: var(--surface);
+  color: var(--stone-dark);
+  font-size: 16px;
+  line-height: 1;
+  cursor:pointer;
+  transition: all 0.15s ease;
+}
+.scale-btn:hover{ border-color: var(--brass); color: var(--brass); }
+.scale-value{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--brass-dark);
+  min-width: 32px;
+  text-align:center;
+}
+.scale-reset-btn{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--stone-light);
+  background: transparent;
+  color: var(--stone-mid);
+  cursor:pointer;
+  transition: all 0.15s ease;
+}
+.scale-reset-btn:hover{ border-color: var(--brass); color: var(--brass); }
+
+.shopping-list-detail{
+  max-width: 560px;
+}
+.shopping-item .check-text{
+  display:flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.shopping-source{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  color: var(--stone-mid);
+  opacity: 0.75;
+}
+.shopping-empty{
+  padding: 30px 4px;
+  text-align: left;
+  color: var(--stone-mid);
+  font-size: 14px;
+}
+
 .back-to-top-btn{
   position: sticky;
   bottom: 16px;
@@ -1835,7 +2444,7 @@ main{
 
 @media print{
   body{ background: #fff; color: #111; }
-  .hero, .toolbar, .close-btn, .progress-row, .back-to-top-btn, main{ display: none !important; }
+  .hero, .toolbar, .macro-panel, .close-btn, .progress-row, .scale-row, .back-to-top-btn, main{ display: none !important; }
   .overlay{
     position: static;
     background: none;
@@ -1843,6 +2452,7 @@ main{
     padding: 0;
   }
   .overlay:not(.open){ display: none !important; }
+  #shoppingListOverlay{ display: none !important; }
   .detail{
     max-width: 100%;
     max-height: none;
