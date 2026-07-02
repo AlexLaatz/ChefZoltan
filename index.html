@@ -166,24 +166,7 @@ const RECIPES = [
     ],
     notes: "Calorie estimate is for a 2-hot-dog serving: 2 buns (240 cal) plus 2 links (340 cal), for about 580 cal, plus a normal squeeze of ketchup and mustard (~20 cal combined) for roughly 600 cal total."
   },
-  { title: "Grilled Steak", category: "Entrees",
-    time: "~15 min (plus rest)", calories: "~600 cal (est.) per 8 oz ribeye",
-    ingredients: [
-      "1 ribeye steak (8 oz)",
-      "Steak rub, to taste"
-    ],
-    steps: [
-      "Defrost the steak.",
-      "Apply steak rub to the steak.",
-      "Heat the grill to 400°F.",
-      "Place the steak on the grill and sear one side.",
-      "Flip the steak.",
-      "For medium, cook until the internal temperature reaches 140°F.",
-      "For medium-rare, cook until the internal temperature reaches 130°F.",
-      "Let the steak rest for 10 minutes before serving."
-    ],
-    notes: "Calorie estimate is for an 8 oz ribeye cooked with just a dry rub (no added oil or butter). Ribeye is a fattier, more marbled cut, so calories can range roughly 550-650 cal depending on marbling and trim."
-  },
+  { title: "Grilled or Pan Fried Steak", category: "Entrees", ...placeholder() },
   { title: "Ground Beef and Egg Burrito", category: "Entrees",
     time: "—", calories: "850 cal per burrito (Sonora tortilla) / 600 cal per burrito (Large tortilla)",
     ingredients: [
@@ -210,7 +193,28 @@ const RECIPES = [
     ],
     notes: "To reheat: add a little shredded cheese between the layers before microwaving for 1 minute, or air fry at 370°F for 4 minutes, flip, then 2 more minutes. Serve with red or green salsa."
   },
-  { title: "Chicken and Rice with Soy Sauce", category: "Entrees", ...placeholder() },
+  { title: "Chicken and Rice with Soy Sauce", category: "Entrees",
+    time: "~15 min", calories: "~1030 cal (est.) for the full recipe, serves ~2, ~515g per serving",
+    ingredients: [
+      "300g Kirkland Signature breaded chicken nuggets (frozen)",
+      "1/3 cup dry rice",
+      "2/3 cup water",
+      "Soy sauce, for drizzling"
+    ],
+    steps: [
+      "Rinse 1/3 cup of rice.",
+      "Add the rinsed rice to a pan with 2/3 cup water.",
+      "Cook on the lowest heat.",
+      "Once it starts bubbling, add the lid and cook for 20 minutes, mixing once after 10 minutes and again at the end.",
+      "Meanwhile, add the frozen chicken nuggets to the air fryer basket.",
+      "Select the Reheat function, set to 370°F for 13 minutes. (Reheat starts the timer immediately as the air fryer warms up, rather than waiting to preheat first.)",
+      "At the 6-minute mark, pause and shake the basket to redistribute the nuggets.",
+      "Resume cooking until the timer finishes.",
+      "In a bowl, add the rice, then the chicken on top.",
+      "Drizzle a generous amount of soy sauce over the top."
+    ],
+    notes: "Calorie estimate combines 1/3 cup dry rice cooked (~243 cal) and 300g Kirkland Signature breaded chicken nuggets (~710 cal, based on the standard label of 210 cal per 89g, scaled up), plus a generous soy sauce drizzle (~30-50 cal depending on how much you pour, estimated at ~40 cal here). Total splits to roughly 515 cal per serving across 2 servings. The soy sauce amount is the roughest part of this estimate since 'generous drizzle' isn't a fixed quantity — let me know if you want it pinned to a specific tablespoon amount instead."
+  },
   { title: "Lencse", category: "Entrees",
     time: "20 min", calories: "~860 cal (est.) for the full recipe, ~640g bowl",
     ingredients: [
