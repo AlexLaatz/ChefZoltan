@@ -166,9 +166,7 @@ function scaleIngredientText(text, multiplier){
   return formatScaledQuantity(scaled) + separator + rest.replace(/^ /, parsed.hadTrailingSpace ? '' : ' ');
 }
 
-const RECIPES = [
-  // ---------- ENTREES ----------
-  { title: "Burgers", category: "Entrees",
+const RECIPES = [  { title: "Burgers", category: "Entrees",
     time: "~15 min", calories: "~625 cal (est.) per burger, ~280g",
     macros: { protein: 34, carbs: 40, fat: 34 },
     image: "image/burger.jpeg",
@@ -287,127 +285,6 @@ const RECIPES = [
     ],
     notes: "Calorie estimate is for a 2-hot-dog serving: 2 buns (240 cal) plus 2 links (340 cal), for about 580 cal, plus a normal squeeze of ketchup and mustard (~20 cal combined) for roughly 600 cal total."
   },
-  { title: "Grilled Steak", category: "Entrees",
-    time: "~15 min (plus rest)", calories: "~600 cal (est.) per 8 oz ribeye",
-    macros: { protein: 48, carbs: 0, fat: 44 },
-    image: "image/steak.jpeg",
-    ingredients: [
-      "1 ribeye steak (8 oz)",
-      "Steak rub, to taste"
-    ],
-    steps: [
-      "Defrost the steak.",
-      "Apply steak rub to the steak.",
-      "Heat the grill to 400°F.",
-      "Place the steak on the grill and sear one side.",
-      "Flip the steak.",
-      "For medium, cook until the internal temperature reaches 140°F.",
-      "For medium-rare, cook until the internal temperature reaches 130°F.",
-      "Let the steak rest for 10 minutes before serving."
-    ],
-    notes: "Calorie estimate is for an 8 oz ribeye cooked with just a dry rub (no added oil or butter). Ribeye is a fattier, more marbled cut, so calories can range roughly 550-650 cal depending on marbling and trim."
-  },
-  { title: "Ground Beef and Egg Burrito", category: "Entrees",
-    time: "—", calories: "850 cal per burrito (Sonora tortilla) / 600 cal per burrito (Large tortilla)",
-    macros: { protein: 45, carbs: 55, fat: 42 },
-    ingredients: [
-      "2 lbs 80/20 ground beef",
-      "7 oz enchilada sauce",
-      "~1 tbsp taco seasoning (⅓ of a Vons packet)",
-      "11–12 large eggs",
-      "Salt and pepper, to taste",
-      "10 Sonora tortillas, or 12 large tortillas",
-      "Kraft singles (2 per burrito for Sonora tortillas, 1 per burrito for large tortillas)",
-      "Shredded cheese, for topping (~2 tbsp per burrito)",
-      "Shredded cheese, for reheating",
-      "Red or green salsa, for serving"
-    ],
-    steps: [
-      "Cook the ground beef in a pan on both sides for a few minutes, then smash and break it apart.",
-      "Add the enchilada sauce and taco seasoning, stirring to combine.",
-      "In a separate pan, scramble the eggs with salt and pepper, breaking them into smaller pieces as they cook.",
-      "Lay out your tortillas (Sonora or large, depending on which batch you're making).",
-      "On each tortilla, layer the Kraft singles (2 for Sonora, 1 for large), then the ground beef mixture, then scrambled egg, and top with shredded cheese.",
-      "Roll into burritos.",
-      "Optional: bake at 350°F for 10 minutes.",
-      "Wrap each burrito in tin foil and freeze. Keep 1–2 in the fridge for near-term eating."
-    ],
-    notes: "To reheat: add a little shredded cheese between the layers before microwaving for 1 minute, or air fry at 370°F for 4 minutes, flip, then 2 more minutes. Serve with red or green salsa."
-  },
-  { title: "Chicken and Rice with Soy Sauce", category: "Entrees",
-    time: "~15 min", calories: "~1030 cal (est.) for the full recipe, serves ~2, ~515g per serving",
-    macros: { protein: 33, carbs: 63, fat: 27 },
-    ingredients: [
-      "300g Kirkland Signature breaded chicken nuggets (frozen)",
-      "1/3 cup dry rice",
-      "2/3 cup water",
-      "Soy sauce, for drizzling"
-    ],
-    steps: [
-      "Rinse 1/3 cup of rice.",
-      "Add the rinsed rice to a pan with 2/3 cup water.",
-      "Cook on the lowest heat.",
-      "Once it starts bubbling, add the lid and cook for 20 minutes, mixing once after 10 minutes and again at the end.",
-      "Meanwhile, add the frozen chicken nuggets to the air fryer basket.",
-      "Select the Reheat function, set to 370°F for 13 minutes. (Reheat starts the timer immediately as the air fryer warms up, rather than waiting to preheat first.)",
-      "At the 6-minute mark, pause and shake the basket to redistribute the nuggets.",
-      "Resume cooking until the timer finishes.",
-      "In a bowl, add the rice, then the chicken on top.",
-      "Drizzle a generous amount of soy sauce over the top."
-    ],
-    notes: "Calorie estimate combines 1/3 cup dry rice cooked (~243 cal) and 300g Kirkland Signature breaded chicken nuggets (~710 cal, based on the standard label of 210 cal per 89g, scaled up), plus a generous soy sauce drizzle (~30-50 cal depending on how much you pour, estimated at ~40 cal here). Total splits to roughly 515 cal per serving across 2 servings. The soy sauce amount is the roughest part of this estimate since 'generous drizzle' isn't a fixed quantity — let me know if you want it pinned to a specific tablespoon amount instead."
-  },
-  { title: "Lencse", category: "Entrees",
-    time: "20 min", calories: "~860 cal (est.) for the full recipe, ~640g bowl",
-    macros: { protein: 37, carbs: 100, fat: 24 },
-    ingredients: [
-      "1 bag (280g) Costco Madras lentils (premade)",
-      "1½ slices ham, cut into small squares",
-      "½ cup dry rice per bag of lentils",
-      "1 cup water (2:1 water to rice ratio)",
-      "Shredded cheese, for garnish",
-      "Crackers, for garnish"
-    ],
-    steps: [
-      "Combine ½ cup dry rice with 1 cup water (2:1 ratio) in a pot.",
-      "Cook on the lowest heat, uncovered, stirring occasionally, for about 20 minutes, until it starts bubbling a little.",
-      "Meanwhile, heat the Madras lentils in a pan on the stovetop.",
-      "Add the diced ham to the lentils and mix together.",
-      "Assemble the bowl with rice on the bottom and the lentil-ham mixture on top.",
-      "Garnish with crackers and shredded cheese."
-    ],
-    notes: "Calorie estimate based on: 1 Costco Tasty Bite Madras Lentils pouch (~290 cal), ½ cup dry rice cooked (~335 cal), 1.5 slices ham (~45 cal), plus a garnish of shredded cheese and crackers (~190 cal). Adjust based on your actual garnish amounts."
-  },
-  { title: "Rakott Krumpli", category: "Entrees",
-    time: "45 min bake (plus prep)", calories: "~540 cal (est.) per serving, ~380g, based on 8 servings",
-    macros: { protein: 20, carbs: 40, fat: 36 },
-    image: "image/rakott-krumpli.jpeg",
-    ingredients: [
-      "6 large potatoes",
-      "6 eggs (for hard-boiling)",
-      "Salt, for boiling water and between layers",
-      "1.5 smoked sausage links, sliced thin, then halved",
-      "Butter, for greasing the baking dish",
-      "Italian-style bread crumbs, for layering and topping",
-      "32 oz sour cream",
-      "~1 cup milk, to thin the sour cream"
-    ],
-    steps: [
-      "Boil the potatoes for 20 minutes, adding a spoon of salt to the water.",
-      "Boil the eggs for 10 minutes, also adding a spoon of salt to the water.",
-      "While those cook, slice the smoked sausage thin, then cut each slice in half.",
-      "Rub butter over the bottom and sides of the baking dish (tepsi).",
-      "Pour a thin layer of Italian-style bread crumbs into the bottom of the dish.",
-      "Once the potatoes are done, drain the hot water and refill with cold water; repeat until the potatoes have cooled.",
-      "In a small bowl, mix the sour cream with about 1 cup of milk until it reaches a runny, creamy texture.",
-      "Peel the potatoes and eggs, then slice both.",
-      "Assemble the casserole: layer 3 sliced potatoes, sprinkle with salt, layer half the sausage, layer 3 sliced eggs, sprinkle with salt, spread 1/3 of the cream mixture, then add a thin layer of bread crumbs.",
-      "Repeat: layer 1 more sliced potato, sprinkle with salt, layer the remaining sausage, layer 3 more sliced eggs, sprinkle with salt, spread another 1/3 of the cream mixture, then add a layer of bread crumbs.",
-      "Finish with the last 2 sliced potatoes, sprinkle with salt, spread the remaining cream mixture to fully cover the potatoes, and top with a final layer of bread crumbs.",
-      "Bake at 425°F for 45 minutes, until golden brown on top."
-    ],
-    notes: "Layered casserole: potato rounds on the bottom, red paprika-flecked sausage half-moons, sliced hard-boiled egg, a runny sour cream layer poured over, and bread crumbs between each layer and on top. Finished dish is golden and browned on top with visible potato rounds peeking through. Calorie estimate (~4,350 cal total dish / 8 servings) based on 6 large potatoes, 6 eggs, 1.5 smoked sausage links, 32 oz sour cream, 1 cup milk, butter, and bread crumbs — actual sausage fat content and cream brand will shift this."
-  },
   { title: "Rántott Hús", category: "Entrees",
     time: "—", calories: "~420 cal (est.) per thigh, ~180g cooked",
     macros: { protein: 30, carbs: 22, fat: 24 },
@@ -467,67 +344,6 @@ const RECIPES = [
       "Assemble the bowl with rice, marinated tuna, green onions, spicy mayo, and sesame seeds on top."
     ]
   },
-  { title: "Pigs in a Blanket", category: "Entrees",
-    time: "13 min bake (plus prep)", calories: "90 cal per piece",
-    macros: { protein: 3, carbs: 6, fat: 6 },
-    image: "image/piggy-in-blanket.jpeg",
-    ingredients: [
-      "8 hot dogs",
-      "1 roll (8oz) Pillsbury crescent dough",
-      "Oil, for greasing the baking tray",
-      "Ketchup and/or mustard, for dipping"
-    ],
-    steps: [
-      "Preheat the oven to 350°F.",
-      "Microwave the hot dogs in 4 rounds of 1 minute each, moving the two inside hot dogs to the outside between each round.",
-      "Add a little oil to the baking tray and wipe it around with a paper towel.",
-      "Peel the paper off the crescent dough tube and press with your thumb on the cardboard tube to pop it open.",
-      "Find the seam and unroll the dough.",
-      "Separate the dough along its perforated seams into 8 triangles.",
-      "Cut each of the 8 triangles into 3 smaller triangles (24 total).",
-      "Cut each hot dog into thirds (24 pieces total).",
-      "Roll each hot dog piece up in a small pastry triangle.",
-      "Bake at 350°F for 13 minutes, checking color and baking longer if needed until browning.",
-      "Let sit for 5 minutes, or move to a plate with a spatula.",
-      "Serve with baked beans, mac and cheese, fries, or chips, and dip in ketchup and/or mustard."
-    ]
-  },
-  { title: "BBQ Ribs", category: "Entrees",
-    time: "2 hr 15 min bake (plus prep)", calories: "~880 cal (est.) per serving, ~1/4 rack (~325g)",
-    macros: { protein: 48, carbs: 55, fat: 45 },
-    image: "image/ribs.jpeg",
-    ingredients: [
-      "1 rack pork spare ribs (~3 lbs)",
-      "1 tsp caraway or cinnamon",
-      "1 tsp rosemary",
-      "½ tsp nutmeg",
-      "⅓ tsp cloves",
-      "⅔ tsp ginger",
-      "1 tsp salt",
-      "1 tsp pepper",
-      "¼ cup BBQ sauce (for pre-bake)",
-      "¼ cup honey (for pre-bake)",
-      "½ cup BBQ sauce (for finishing sauce)",
-      "¼ cup honey (for finishing sauce)"
-    ],
-    steps: [
-      "Preheat the oven to 300°F.",
-      "Line an oven tray with two layers of tin foil.",
-      "Place the ribs upside down on the foil and remove the skin (grip with a paper towel and pull the skin up; if it doesn't come off, push a knife under the skin next to the bone and twist to loosen it).",
-      "Between each bone, cut a quarter slice.",
-      "Flip the ribs back to the normal side.",
-      "In a bowl, combine the caraway (or cinnamon), rosemary, nutmeg, cloves, ginger, salt, and pepper. Stir together.",
-      "Rub 2/3 of the seasoning into the meat side, and the remaining 1/3 into the bone side.",
-      "In another bowl, mix ¼ cup BBQ sauce with ¼ cup honey.",
-      "Spread 1/4 of that sauce on the bone side and 3/4 on the meat side.",
-      "Add one more layer of tin foil on top, and roll up all 4 sides so the sauce doesn't escape.",
-      "Bake at 300°F for 2 hours 15 minutes.",
-      "While the ribs bake, mix ½ cup BBQ sauce with ¼ cup honey in a bowl for the finishing sauce.",
-      "Once out of the oven, transfer the ribs to a serving dish and cut into servings.",
-      "Top with the finishing sauce."
-    ],
-    notes: "Calorie estimate assumes a single ~3 lb rack of pork spare ribs from Vons or Costco, cut into about 4 servings, including both rounds of BBQ sauce/honey glaze. Actual rack size and how much sauce clings will shift this."
-  },
   { title: "Empanada", category: "Entrees",
     time: "10-15 min bake (plus prep)", calories: "~120 cal (est.) per empanada, ~43g",
     macros: { protein: 5, carbs: 10, fat: 6 },
@@ -560,6 +376,31 @@ const RECIPES = [
       "Serve with soy sauce."
     ],
     notes: "Calorie estimate is per baked empanada: one Goya empanada dough disc (~90 cal) plus a 15g portion of the beef-pea filling (~28 cal). Actual ground beef fat content and how much fat is drained will shift this."
+  },
+  { title: "Pigs in a Blanket", category: "Entrees",
+    time: "13 min bake (plus prep)", calories: "90 cal per piece",
+    macros: { protein: 3, carbs: 6, fat: 6 },
+    image: "image/piggy-in-blanket.jpeg",
+    ingredients: [
+      "8 hot dogs",
+      "1 roll (8oz) Pillsbury crescent dough",
+      "Oil, for greasing the baking tray",
+      "Ketchup and/or mustard, for dipping"
+    ],
+    steps: [
+      "Preheat the oven to 350°F.",
+      "Microwave the hot dogs in 4 rounds of 1 minute each, moving the two inside hot dogs to the outside between each round.",
+      "Add a little oil to the baking tray and wipe it around with a paper towel.",
+      "Peel the paper off the crescent dough tube and press with your thumb on the cardboard tube to pop it open.",
+      "Find the seam and unroll the dough.",
+      "Separate the dough along its perforated seams into 8 triangles.",
+      "Cut each of the 8 triangles into 3 smaller triangles (24 total).",
+      "Cut each hot dog into thirds (24 pieces total).",
+      "Roll each hot dog piece up in a small pastry triangle.",
+      "Bake at 350°F for 13 minutes, checking color and baking longer if needed until browning.",
+      "Let sit for 5 minutes, or move to a plate with a spatula.",
+      "Serve with baked beans, mac and cheese, fries, or chips, and dip in ketchup and/or mustard."
+    ]
   },
   { title: "Fried Fish with Patacones", category: "Entrees",
     time: "~15 min", calories: "~530 cal (est.) per serving (2-3 fish pieces + patacones from ¾ plantain), ~270g",
@@ -601,6 +442,163 @@ const RECIPES = [
   },
 
   // ---------- SANDWICHES ----------
+  { title: "Grilled Steak", category: "Entrees",
+    time: "~15 min (plus rest)", calories: "~600 cal (est.) per 8 oz ribeye",
+    macros: { protein: 48, carbs: 0, fat: 44 },
+    image: "image/steak.jpeg",
+    ingredients: [
+      "1 ribeye steak (8 oz)",
+      "Steak rub, to taste"
+    ],
+    steps: [
+      "Defrost the steak.",
+      "Apply steak rub to the steak.",
+      "Heat the grill to 400°F.",
+      "Place the steak on the grill and sear one side.",
+      "Flip the steak.",
+      "For medium, cook until the internal temperature reaches 140°F.",
+      "For medium-rare, cook until the internal temperature reaches 130°F.",
+      "Let the steak rest for 10 minutes before serving."
+    ],
+    notes: "Calorie estimate is for an 8 oz ribeye cooked with just a dry rub (no added oil or butter). Ribeye is a fattier, more marbled cut, so calories can range roughly 550-650 cal depending on marbling and trim."
+  },
+  { title: "BBQ Ribs", category: "Entrees",
+    time: "2 hr 15 min bake (plus prep)", calories: "~880 cal (est.) per serving, ~1/4 rack (~325g)",
+    macros: { protein: 48, carbs: 55, fat: 45 },
+    image: "image/ribs.jpeg",
+    ingredients: [
+      "1 rack pork spare ribs (~3 lbs)",
+      "1 tsp caraway or cinnamon",
+      "1 tsp rosemary",
+      "½ tsp nutmeg",
+      "⅓ tsp cloves",
+      "⅔ tsp ginger",
+      "1 tsp salt",
+      "1 tsp pepper",
+      "¼ cup BBQ sauce (for pre-bake)",
+      "¼ cup honey (for pre-bake)",
+      "½ cup BBQ sauce (for finishing sauce)",
+      "¼ cup honey (for finishing sauce)"
+    ],
+    steps: [
+      "Preheat the oven to 300°F.",
+      "Line an oven tray with two layers of tin foil.",
+      "Place the ribs upside down on the foil and remove the skin (grip with a paper towel and pull the skin up; if it doesn't come off, push a knife under the skin next to the bone and twist to loosen it).",
+      "Between each bone, cut a quarter slice.",
+      "Flip the ribs back to the normal side.",
+      "In a bowl, combine the caraway (or cinnamon), rosemary, nutmeg, cloves, ginger, salt, and pepper. Stir together.",
+      "Rub 2/3 of the seasoning into the meat side, and the remaining 1/3 into the bone side.",
+      "In another bowl, mix ¼ cup BBQ sauce with ¼ cup honey.",
+      "Spread 1/4 of that sauce on the bone side and 3/4 on the meat side.",
+      "Add one more layer of tin foil on top, and roll up all 4 sides so the sauce doesn't escape.",
+      "Bake at 300°F for 2 hours 15 minutes.",
+      "While the ribs bake, mix ½ cup BBQ sauce with ¼ cup honey in a bowl for the finishing sauce.",
+      "Once out of the oven, transfer the ribs to a serving dish and cut into servings.",
+      "Top with the finishing sauce."
+    ],
+    notes: "Calorie estimate assumes a single ~3 lb rack of pork spare ribs from Vons or Costco, cut into about 4 servings, including both rounds of BBQ sauce/honey glaze. Actual rack size and how much sauce clings will shift this."
+  },
+  { title: "Rakott Krumpli", category: "Entrees",
+    time: "45 min bake (plus prep)", calories: "~540 cal (est.) per serving, ~380g, based on 8 servings",
+    macros: { protein: 20, carbs: 40, fat: 36 },
+    image: "image/rakott-krumpli.jpeg",
+    ingredients: [
+      "6 large potatoes",
+      "6 eggs (for hard-boiling)",
+      "Salt, for boiling water and between layers",
+      "1.5 smoked sausage links, sliced thin, then halved",
+      "Butter, for greasing the baking dish",
+      "Italian-style bread crumbs, for layering and topping",
+      "32 oz sour cream",
+      "~1 cup milk, to thin the sour cream"
+    ],
+    steps: [
+      "Boil the potatoes for 20 minutes, adding a spoon of salt to the water.",
+      "Boil the eggs for 10 minutes, also adding a spoon of salt to the water.",
+      "While those cook, slice the smoked sausage thin, then cut each slice in half.",
+      "Rub butter over the bottom and sides of the baking dish (tepsi).",
+      "Pour a thin layer of Italian-style bread crumbs into the bottom of the dish.",
+      "Once the potatoes are done, drain the hot water and refill with cold water; repeat until the potatoes have cooled.",
+      "In a small bowl, mix the sour cream with about 1 cup of milk until it reaches a runny, creamy texture.",
+      "Peel the potatoes and eggs, then slice both.",
+      "Assemble the casserole: layer 3 sliced potatoes, sprinkle with salt, layer half the sausage, layer 3 sliced eggs, sprinkle with salt, spread 1/3 of the cream mixture, then add a thin layer of bread crumbs.",
+      "Repeat: layer 1 more sliced potato, sprinkle with salt, layer the remaining sausage, layer 3 more sliced eggs, sprinkle with salt, spread another 1/3 of the cream mixture, then add a layer of bread crumbs.",
+      "Finish with the last 2 sliced potatoes, sprinkle with salt, spread the remaining cream mixture to fully cover the potatoes, and top with a final layer of bread crumbs.",
+      "Bake at 425°F for 45 minutes, until golden brown on top."
+    ],
+    notes: "Layered casserole: potato rounds on the bottom, red paprika-flecked sausage half-moons, sliced hard-boiled egg, a runny sour cream layer poured over, and bread crumbs between each layer and on top. Finished dish is golden and browned on top with visible potato rounds peeking through. Calorie estimate (~4,350 cal total dish / 8 servings) based on 6 large potatoes, 6 eggs, 1.5 smoked sausage links, 32 oz sour cream, 1 cup milk, butter, and bread crumbs — actual sausage fat content and cream brand will shift this."
+  },
+  { title: "Lencse", category: "Entrees",
+    time: "20 min", calories: "~860 cal (est.) for the full recipe, ~640g bowl",
+    macros: { protein: 37, carbs: 100, fat: 24 },
+    ingredients: [
+      "1 bag (280g) Costco Madras lentils (premade)",
+      "1½ slices ham, cut into small squares",
+      "½ cup dry rice per bag of lentils",
+      "1 cup water (2:1 water to rice ratio)",
+      "Shredded cheese, for garnish",
+      "Crackers, for garnish"
+    ],
+    steps: [
+      "Combine ½ cup dry rice with 1 cup water (2:1 ratio) in a pot.",
+      "Cook on the lowest heat, uncovered, stirring occasionally, for about 20 minutes, until it starts bubbling a little.",
+      "Meanwhile, heat the Madras lentils in a pan on the stovetop.",
+      "Add the diced ham to the lentils and mix together.",
+      "Assemble the bowl with rice on the bottom and the lentil-ham mixture on top.",
+      "Garnish with crackers and shredded cheese."
+    ],
+    notes: "Calorie estimate based on: 1 Costco Tasty Bite Madras Lentils pouch (~290 cal), ½ cup dry rice cooked (~335 cal), 1.5 slices ham (~45 cal), plus a garnish of shredded cheese and crackers (~190 cal). Adjust based on your actual garnish amounts."
+  },
+  { title: "Ground Beef and Egg Burrito", category: "Entrees",
+    time: "—", calories: "850 cal per burrito (Sonora tortilla) / 600 cal per burrito (Large tortilla)",
+    macros: { protein: 45, carbs: 55, fat: 42 },
+    ingredients: [
+      "2 lbs 80/20 ground beef",
+      "7 oz enchilada sauce",
+      "~1 tbsp taco seasoning (⅓ of a Vons packet)",
+      "11–12 large eggs",
+      "Salt and pepper, to taste",
+      "10 Sonora tortillas, or 12 large tortillas",
+      "Kraft singles (2 per burrito for Sonora tortillas, 1 per burrito for large tortillas)",
+      "Shredded cheese, for topping (~2 tbsp per burrito)",
+      "Shredded cheese, for reheating",
+      "Red or green salsa, for serving"
+    ],
+    steps: [
+      "Cook the ground beef in a pan on both sides for a few minutes, then smash and break it apart.",
+      "Add the enchilada sauce and taco seasoning, stirring to combine.",
+      "In a separate pan, scramble the eggs with salt and pepper, breaking them into smaller pieces as they cook.",
+      "Lay out your tortillas (Sonora or large, depending on which batch you're making).",
+      "On each tortilla, layer the Kraft singles (2 for Sonora, 1 for large), then the ground beef mixture, then scrambled egg, and top with shredded cheese.",
+      "Roll into burritos.",
+      "Optional: bake at 350°F for 10 minutes.",
+      "Wrap each burrito in tin foil and freeze. Keep 1–2 in the fridge for near-term eating."
+    ],
+    notes: "To reheat: add a little shredded cheese between the layers before microwaving for 1 minute, or air fry at 370°F for 4 minutes, flip, then 2 more minutes. Serve with red or green salsa."
+  },
+  { title: "Chicken and Rice with Soy Sauce", category: "Entrees",
+    time: "~15 min", calories: "~1030 cal (est.) for the full recipe, serves ~2, ~515g per serving",
+    macros: { protein: 33, carbs: 63, fat: 27 },
+    ingredients: [
+      "300g Kirkland Signature breaded chicken nuggets (frozen)",
+      "1/3 cup dry rice",
+      "2/3 cup water",
+      "Soy sauce, for drizzling"
+    ],
+    steps: [
+      "Rinse 1/3 cup of rice.",
+      "Add the rinsed rice to a pan with 2/3 cup water.",
+      "Cook on the lowest heat.",
+      "Once it starts bubbling, add the lid and cook for 20 minutes, mixing once after 10 minutes and again at the end.",
+      "Meanwhile, add the frozen chicken nuggets to the air fryer basket.",
+      "Select the Reheat function, set to 370°F for 13 minutes. (Reheat starts the timer immediately as the air fryer warms up, rather than waiting to preheat first.)",
+      "At the 6-minute mark, pause and shake the basket to redistribute the nuggets.",
+      "Resume cooking until the timer finishes.",
+      "In a bowl, add the rice, then the chicken on top.",
+      "Drizzle a generous amount of soy sauce over the top."
+    ],
+    notes: "Calorie estimate combines 1/3 cup dry rice cooked (~243 cal) and 300g Kirkland Signature breaded chicken nuggets (~710 cal, based on the standard label of 210 cal per 89g, scaled up), plus a generous soy sauce drizzle (~30-50 cal depending on how much you pour, estimated at ~40 cal here). Total splits to roughly 515 cal per serving across 2 servings. The soy sauce amount is the roughest part of this estimate since 'generous drizzle' isn't a fixed quantity — let me know if you want it pinned to a specific tablespoon amount instead."
+  },
   { title: "Toasted Turkey Egg & Cheese Sandwich", category: "Sandwiches",
     time: "~8 min", calories: "500 cal per sandwich",
     macros: { protein: 28, carbs: 38, fat: 26 },
@@ -872,22 +870,28 @@ const RECIPES = [
     ],
     notes: "If using heavy whipping cream instead of milk, use a 2/3 heavy whipping cream to 1/3 milk ratio. Aim for a texture between how Mom and Dad each like it. Calorie estimate is per potato serving, based on one ~200g potato with its share of the butter, sour cream, and milk. Using heavy whipping cream instead of milk will raise this."
   },
-  { title: "Baked Beans", category: "Sides",
-    time: "2 min", calories: "~600 cal (est.) per 2-cup serving, ~550g",
-    macros: { protein: 13, carbs: 100, fat: 3 },
-    image: "image/baked-beans.jpeg",
+  { title: "Texas Toast", category: "Sides",
+    time: "~5 min", calories: "~190 cal (est.) per slice, ~50g",
+    macros: { protein: 4, carbs: 22, fat: 9 },
+    image: "image/texas-toast.jpeg",
     ingredients: [
-      "1 can baked beans (2 cups)",
-      "Ketchup (a 3-4 second squeeze, ~2 tbsp)"
+      "1 slice Texas toast bread (per serving)",
+      "½ tbsp butter, softened (per slice)",
+      "Garlic salt (2 grinds), or ¼ tsp garlic powder + a couple grinds of salt",
+      "Dried parsley",
+      "Optional: Parmesan"
     ],
     steps: [
-      "Open the can and pour the beans into a microwave-safe bowl.",
-      "Squeeze ketchup into the bowl for 3-4 seconds.",
-      "Mix.",
-      "Microwave 2 cups for 2 minutes, stirring halfway through."
+      "Soften the butter in a small bowl.",
+      "Mix in either 2 grinds of garlic salt, or ¼ tsp garlic powder with a couple grinds of salt.",
+      "Mix in dried parsley (and Parmesan, if using).",
+      "Spread the butter mixture on the bread.",
+      "Toast on the stove, butter-side down, until golden, not browned."
     ],
-    notes: "Calorie estimate based on standard canned baked beans (~140 cal per ½ cup) plus a ketchup squeeze (~40 cal). Actual brand and can size will shift this."
+    notes: "Calorie estimate is per slice of Texas toast bread with butter; a Parmesan topping will add roughly 20-30 more calories per slice."
   },
+
+  // ---------- DESSERT ----------
   { title: "Twice Baked Potatoes", category: "Sides",
     time: "~35 min", calories: "~250 cal (est.) per potato (2 halves), ~230g",
     macros: { protein: 8, carbs: 30, fat: 12 },
@@ -915,6 +919,22 @@ const RECIPES = [
       "Bake at 300°F for 15-20 minutes."
     ]
   },
+  { title: "Baked Beans", category: "Sides",
+    time: "2 min", calories: "~600 cal (est.) per 2-cup serving, ~550g",
+    macros: { protein: 13, carbs: 100, fat: 3 },
+    image: "image/baked-beans.jpeg",
+    ingredients: [
+      "1 can baked beans (2 cups)",
+      "Ketchup (a 3-4 second squeeze, ~2 tbsp)"
+    ],
+    steps: [
+      "Open the can and pour the beans into a microwave-safe bowl.",
+      "Squeeze ketchup into the bowl for 3-4 seconds.",
+      "Mix.",
+      "Microwave 2 cups for 2 minutes, stirring halfway through."
+    ],
+    notes: "Calorie estimate based on standard canned baked beans (~140 cal per ½ cup) plus a ketchup squeeze (~40 cal). Actual brand and can size will shift this."
+  },
   { title: "Asparagus", category: "Sides",
     time: "~10 min", calories: "~20 cal (est.) per serving (5 spears, ~100g)",
     macros: { protein: 2, carbs: 4, fat: 0 },
@@ -935,19 +955,6 @@ const RECIPES = [
       "Transfer to a plate with tongs."
     ]
   },
-  { title: "Pita with Hummus", category: "Sides",
-    time: "~2 min", calories: "~240 cal (est.) per serving, 1 pita + 2 tbsp hummus",
-    macros: { protein: 8, carbs: 34, fat: 8 },
-    ingredients: [
-      "1 whole pita",
-      "~2 tbsp store-bought hummus"
-    ],
-    steps: [
-      "Toast or microwave the pita.",
-      "Dip in store-bought hummus."
-    ],
-    notes: "Calorie estimate combines 1 large pita (~170 cal) and 2 tbsp hummus (~70 cal), for roughly 240 cal total. Actual pita size/brand and hummus brand will shift this somewhat."
-  },
   { title: "Greek Yogurt with Honey and Cinnamon", category: "Sides",
     time: "2 min", calories: "120 cal per serving",
     macros: { protein: 13, carbs: 12, fat: 0 },
@@ -965,28 +972,19 @@ const RECIPES = [
       "Mix."
     ]
   },
-  { title: "Texas Toast", category: "Sides",
-    time: "~5 min", calories: "~190 cal (est.) per slice, ~50g",
-    macros: { protein: 4, carbs: 22, fat: 9 },
-    image: "image/texas-toast.jpeg",
+  { title: "Pita with Hummus", category: "Sides",
+    time: "~2 min", calories: "~240 cal (est.) per serving, 1 pita + 2 tbsp hummus",
+    macros: { protein: 8, carbs: 34, fat: 8 },
     ingredients: [
-      "1 slice Texas toast bread (per serving)",
-      "½ tbsp butter, softened (per slice)",
-      "Garlic salt (2 grinds), or ¼ tsp garlic powder + a couple grinds of salt",
-      "Dried parsley",
-      "Optional: Parmesan"
+      "1 whole pita",
+      "~2 tbsp store-bought hummus"
     ],
     steps: [
-      "Soften the butter in a small bowl.",
-      "Mix in either 2 grinds of garlic salt, or ¼ tsp garlic powder with a couple grinds of salt.",
-      "Mix in dried parsley (and Parmesan, if using).",
-      "Spread the butter mixture on the bread.",
-      "Toast on the stove, butter-side down, until golden, not browned."
+      "Toast or microwave the pita.",
+      "Dip in store-bought hummus."
     ],
-    notes: "Calorie estimate is per slice of Texas toast bread with butter; a Parmesan topping will add roughly 20-30 more calories per slice."
+    notes: "Calorie estimate combines 1 large pita (~170 cal) and 2 tbsp hummus (~70 cal), for roughly 240 cal total. Actual pita size/brand and hummus brand will shift this somewhat."
   },
-
-  // ---------- DESSERT ----------
   { title: "Blueberry Muffins", category: "Dessert",
     time: "21 min bake (plus prep)", calories: "~500 cal (est.) per serving, 2 muffins + butter + 1 cup milk",
     macros: { protein: 7, carbs: 68, fat: 22 },
