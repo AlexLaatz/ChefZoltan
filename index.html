@@ -1160,7 +1160,13 @@ let activeCategory = 'All';
 function speckleSeed(i){
   // deterministic pseudo-random speckle placement per card
   const seeds = [];
+  // The LCG below (x = x * 48271 % 233280) maps 0 -> 0 forever, so any
+  // starting x of exactly 0 collapses the whole seed to zeros. That happens
+  // whenever (i * 999331) % 97 === 0. Guard it directly rather than trying
+  // to dodge it with an offset, since an offset just relocates which index
+  // hits zero instead of preventing it.
   let x = i * 999331 % 97;
+  if(x === 0) x = 53; // arbitrary nonzero residue mod 97
   for(let n=0;n<14;n++){
     x = (x * 48271) % 233280;
     seeds.push(x / 233280);
