@@ -488,9 +488,12 @@ main{
   position:relative;
 }
 .detail-image{
-  height: 340px;
-  background-size:cover;
-  background-position: top center;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: var(--stone-dark);
   border-radius: var(--radius) var(--radius) 0 0;
 }
 .detail-body{ padding: 28px 32px 36px; }
