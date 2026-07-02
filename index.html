@@ -1111,22 +1111,35 @@ function renderGrid(){
         <h3>${r.title}</h3>
         <div class="card-meta">
           <span>${r.calories}</span>
+          <span class="meta-dot">&middot;</span>
+          <span>${r.time}</span>
         </div>
       </div>
     `;
     card.querySelector('.card-speckle').style.background = speckleBackground(idx);
-    card.onclick = () => openDetail(idx);
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `View recipe: ${r.title}`);
+    card.onclick = () => openDetail(idx, card);
+    card.onkeydown = (e) => {
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        openDetail(idx, card);
+      }
+    };
     grid.appendChild(card);
   });
 }
 
-function openDetail(idx){
+let lastFocusedEl = null;
+
+function openDetail(idx, triggerEl){
   const r = RECIPES[idx];
   const detailImage = r.image
     ? `<div class="detail-image" style="background-image:url('${r.image}')"></div>`
     : `<div class="detail-image detail-image-empty"><span>${r.title.charAt(0)}</span></div>`;
   detail.innerHTML = `
-    <button class="close-btn" id="closeBtn">&times;</button>
+    <button class="close-btn" id="closeBtn" aria-label="Close">&times;</button>
     ${detailImage}
     <div class="detail-body">
       <p class="card-cat">${r.category}</p>
@@ -1148,13 +1161,28 @@ function openDetail(idx){
       ${r.notes ? `<p class="notes"><strong>Note:</strong> ${r.notes}</p>` : ''}
     </div>
   `;
+  lastFocusedEl = triggerEl || document.activeElement;
   overlay.classList.add('open');
-  document.getElementById('closeBtn').onclick = closeDetail;
+  document.body.style.overflow = 'hidden';
+  const closeBtn = document.getElementById('closeBtn');
+  closeBtn.onclick = closeDetail;
+  closeBtn.focus();
 }
 
 function closeDetail(){
   overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  if(lastFocusedEl){
+    lastFocusedEl.focus();
+    lastFocusedEl = null;
+  }
 }
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && overlay.classList.contains('open')){
+    closeDetail();
+  }
+});
 
 overlay.onclick = (e) => { if(e.target === overlay) closeDetail(); };
 search.addEventListener('input', renderGrid);
@@ -1166,7 +1194,7 @@ renderGrid();
 <style>
 :root{
   --stone-dark: #E8E2D6;
-  --stone-mid: #9A9184;
+  --stone-mid: #A6AA9D;
   --stone-light: #2E3033;
   --marble: #18191B;
   --brass: #B8AD7F;
@@ -1301,6 +1329,10 @@ main{
   background: var(--brass);
   clip-path: polygon(100% 0, 0 0, 100% 100%);
 }
+.card:focus-visible{
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
 .card-image{
   aspect-ratio: 1 / 1;
   height: auto;
@@ -1358,6 +1390,28 @@ main{
   color: var(--stone-mid);
   display:flex;
   gap:6px;
+  align-items: baseline;
+}
+.card-body .card-meta{
+  flex-wrap: nowrap;
+}
+.card-body .card-meta span:first-child{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.card-body .card-meta .meta-dot{
+  flex: 0 0 auto;
+  opacity: 0.6;
+}
+.card-body .card-meta span:last-child{
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .detail-meta-row{
   justify-content: space-between;
@@ -1451,9 +1505,14 @@ main{
   cursor:pointer;
   z-index:2;
 }
+.close-btn:focus-visible{
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
 
 @media (max-width: 600px){
   .detail-columns{ grid-template-columns: 1fr; }
+  .detail-body{ padding: 22px 18px 28px; }
   .hero{ padding: 60px 20px 50px; }
 }
 </style>
