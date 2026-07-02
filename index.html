@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Slab — Recipes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================
+   RECIPE DATA
+   ------------------------------------------------
+   To add a new recipe: copy one whole block below
+   (from { to },) and paste it into the RECIPES list.
+   Then just change the text. Leave everything else
+   (the punctuation, brackets, quotes) exactly as is.
+   ============================================ */
+
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-slab">
+    <p class="eyebrow">RECIPE COLLECTION</p>
+    <h1>The Slab</h1>
+    <p class="hero-sub">Things worth cooking twice.</p>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <input id="search" type="text" placeholder="Search recipes or ingredients…" />
+    <div class="filters" id="filters"></div>
+  </div>
+
+  <section id="grid" class="grid"></section>
+</main>
+
+<footer>
+  <p>Built one dinner at a time.</p>
+</footer>
+
+<div class="overlay" id="overlay">
+  <div class="detail" id="detail"></div>
+</div>
+
+<script>
+
+/* ============================================
+   RECIPE DATA — edit / copy-paste here
+   ============================================
+   TEMPLATE (copy this whole block to add a recipe):
+
+   {
+     title: "Recipe Name",
+     category: "Dinner",
+     time: "30 min",
+     serves: "2",
+     image: "https://images.unsplash.com/photo-XXXX",
+     ingredients: [
+       "1 cup flour",
+       "2 eggs"
+     ],
+     steps: [
+       "Do the first thing.",
+       "Do the second thing."
+     ],
+     notes: "Any tips or swaps go here."
+   },
+
+   ============================================ */
+
+function placeholder(){
+  return {
+    time: "—",
+    serves: "—",
+    ingredients: ["Add ingredients here"],
+    steps: ["Add steps here"]
+  };
+}
+
+const RECIPES = [
+  // ---------- ENTREES ----------
+  { title: "Burgers and Fries", category: "Entrees", ...placeholder() },
+  { title: "Chicken Nugget", category: "Entrees", ...placeholder() },
+  { title: "Pulled Pork Burger", category: "Entrees", ...placeholder() },
+  { title: "CPK Pizza Margherita", category: "Entrees", ...placeholder() },
+  { title: "Hot Dogs", category: "Entrees", ...placeholder() },
+  { title: "Grilled or Pan Fried Steak", category: "Entrees", ...placeholder() },
+  { title: "Ground Beef and Egg Burrito", category: "Entrees", ...placeholder() },
+  { title: "Chicken and Rice with Soy Sauce", category: "Entrees", ...placeholder() },
+  { title: "Lencse", category: "Entrees", ...placeholder() },
+  { title: "Rakott Krumpli", category: "Entrees", ...placeholder() },
+  { title: "Rántott Hús", category: "Entrees", ...placeholder() },
+  { title: "Poke", category: "Entrees", ...placeholder() },
+  { title: "Pigs in a Blanket", category: "Entrees", ...placeholder() },
+  { title: "BBQ Ribs", category: "Entrees", ...placeholder() },
+  { title: "Empanada", category: "Entrees", ...placeholder() },
+  { title: "Fried Fish with Patacones", category: "Entrees", ...placeholder() },
+
+  // ---------- SANDWICHES ----------
+  { title: "Toasted Turkey Egg & Cheese Sandwich", category: "Sandwiches", ...placeholder() },
+  { title: "Turkey Salami & Cheese Sandwich", category: "Sandwiches", ...placeholder() },
+  { title: "Grilled Cheese Sandwich", category: "Sandwiches", ...placeholder() },
+
+  // ---------- SOUPS ----------
+  { title: "Tomato Soup with Grilled Cheese", category: "Soups", ...placeholder() },
+  { title: "Tortilla Soup", category: "Soups", ...placeholder() },
+  { title: "Krumpli Leves", category: "Soups", ...placeholder() },
+  { title: "Gulyás Leves", category: "Soups", ...placeholder() },
+  { title: "Udon", category: "Soups", ...placeholder() },
+
+  // ---------- SIDES ----------
+  { title: "Potato Wedges", category: "Sides", ...placeholder() },
+  { title: "Mashed Potatoes", category: "Sides", ...placeholder() },
+  { title: "Baked Beans", category: "Sides", ...placeholder() },
+  { title: "Twice Baked Potatoes", category: "Sides", ...placeholder() },
+  { title: "Asparagus", category: "Sides", ...placeholder() },
+  { title: "Bread with Hummus", category: "Sides", ...placeholder() },
+  { title: "Greek Yogurt with Honey and Cinnamon", category: "Sides", ...placeholder() },
+  { title: "Texas Toast", category: "Sides", ...placeholder() },
+
+  // ---------- DESSERT ----------
+  { title: "Blueberry Muffins", category: "Dessert", ...placeholder() },
+  { title: "Brownies", category: "Dessert", ...placeholder() },
+  { title: "Cinnamon Rolls", category: "Dessert", ...placeholder() },
+
+  // ---------- DRINKS ----------
+  { title: "Protein Smoothie", category: "Drinks", ...placeholder() },
+  { title: "Iced Protein Coffee", category: "Drinks", ...placeholder() },
+  { title: "Hot Cocoa", category: "Drinks", ...placeholder() },
+  { title: "Tea", category: "Drinks", ...placeholder() },
+
+  // ---------- SAUCES / EXTRAS ----------
+  { title: "Cane's Sauce", category: "Sauces/Extras", ...placeholder() },
+
+  // ---------- WANT TO LEARN ----------
+  { title: "Dim Sum (Steamed Chinese)", category: "Want to Learn", ...placeholder() },
+  { title: "Currywurst", category: "Want to Learn", ...placeholder() }
+];
+
+/* ============================================
+   TEMPLATE — copy this to add a new dish
+   (replace one of the placeholder ones, or add new):
+
+   { title: "Recipe Name", category: "Entrees",
+     time: "30 min", serves: "2",
+     ingredients: ["1 cup flour", "2 eggs"],
+     steps: ["Do the first thing.", "Do the second thing."],
+     notes: "Optional tip here." },
+
+   ============================================ */
+
+/* ============================================
+   RENDER LOGIC — no need to touch below this line
+   ============================================ */
+
+const grid = document.getElementById('grid');
+const search = document.getElementById('search');
+const filtersEl = document.getElementById('filters');
+const overlay = document.getElementById('overlay');
+const detail = document.getElementById('detail');
+
+const categories = ['All', ...new Set(RECIPES.map(r => r.category))];
+let activeCategory = 'All';
+
+function speckleSeed(i){
+  // deterministic pseudo-random speckle placement per card
+  const seeds = [];
+  let x = i * 999331 % 97;
+  for(let n=0;n<14;n++){
+    x = (x * 48271) % 233280;
+    seeds.push(x / 233280);
+  }
+  return seeds;
+}
+
+function speckleBackground(i){
+  const s = speckleSeed(i);
+  let layers = [];
+  for(let n=0;n<7;n++){
+    const x = (s[n*2] * 100).toFixed(1);
+    const y = (s[n*2+1] * 100).toFixed(1);
+    const size = (1 + s[n] * 2).toFixed(1);
+    const light = n % 2 === 0;
+    layers.push(`radial-gradient(circle at ${x}% ${y}%, ${light ? 'rgba(232,226,214,0.5)' : 'rgba(20,18,16,0.35)'} 0px, transparent ${size}px)`);
+  }
+  return layers.join(',');
+}
+
+function renderFilters(){
+  filtersEl.innerHTML = '';
+  categories.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.textContent = cat;
+    btn.className = 'filter-btn' + (cat === activeCategory ? ' active' : '');
+    btn.onclick = () => { activeCategory = cat; renderFilters(); renderGrid(); };
+    filtersEl.appendChild(btn);
+  });
+}
+
+function renderGrid(){
+  const query = search.value.trim().toLowerCase();
+  grid.innerHTML = '';
+
+  const filtered = RECIPES.filter(r => {
+    const matchesCategory = activeCategory === 'All' || r.category === activeCategory;
+    const haystack = (r.title + ' ' + r.ingredients.join(' ')).toLowerCase();
+    const matchesQuery = haystack.includes(query);
+    return matchesCategory && matchesQuery;
+  });
+
+  if(filtered.length === 0){
+    grid.innerHTML = '<p class="empty">No recipes match yet. Try a different search.</p>';
+    return;
+  }
+
+  filtered.forEach((r) => {
+    const idx = RECIPES.indexOf(r);
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.style.setProperty('--speckle', speckleBackground(idx));
+    const imageBlock = r.image
+      ? `<div class="card-image" style="background-image:url('${r.image}')"></div>`
+      : `<div class="card-image card-image-empty"><span>${r.title.charAt(0)}</span></div>`;
+    card.innerHTML = `
+      ${imageBlock}
+      <div class="card-speckle"></div>
+      <div class="card-body">
+        <p class="card-cat">${r.category}</p>
+        <h3>${r.title}</h3>
+        <div class="card-meta">
+          <span>${r.time}</span>
+          <span>·</span>
+          <span>Serves ${r.serves}</span>
+        </div>
+      </div>
+    `;
+    card.querySelector('.card-speckle').style.background = speckleBackground(idx);
+    card.onclick = () => openDetail(idx);
+    grid.appendChild(card);
+  });
+}
+
+function openDetail(idx){
+  const r = RECIPES[idx];
+  const detailImage = r.image
+    ? `<div class="detail-image" style="background-image:url('${r.image}')"></div>`
+    : `<div class="detail-image detail-image-empty"><span>${r.title.charAt(0)}</span></div>`;
+  detail.innerHTML = `
+    <button class="close-btn" id="closeBtn">&times;</button>
+    ${detailImage}
+    <div class="detail-body">
+      <p class="card-cat">${r.category}</p>
+      <h2>${r.title}</h2>
+      <div class="card-meta">
+        <span>${r.time}</span>
+        <span>·</span>
+        <span>Serves ${r.serves}</span>
+      </div>
+      <div class="detail-columns">
+        <div>
+          <h4>Ingredients</h4>
+          <ul>${r.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
+        </div>
+        <div>
+          <h4>Steps</h4>
+          <ol>${r.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+        </div>
+      </div>
+      ${r.notes ? `<p class="notes"><strong>Note:</strong> ${r.notes}</p>` : ''}
+    </div>
+  `;
+  overlay.classList.add('open');
+  document.getElementById('closeBtn').onclick = closeDetail;
+}
+
+function closeDetail(){
+  overlay.classList.remove('open');
+}
+
+overlay.onclick = (e) => { if(e.target === overlay) closeDetail(); };
+search.addEventListener('input', renderGrid);
+
+renderFilters();
+renderGrid();
+</script>
+
+<style>
+:root{
+  --stone-dark: #24211E;
+  --stone-mid: #6B6459;
+  --stone-light: #E8E2D6;
+  --marble: #F7F4EE;
+  --brass: #B08D57;
+  --brass-dark: #8C6D3F;
+  --radius: 10px;
+}
+
+*{ box-sizing: border-box; }
+
+body{
+  margin:0;
+  font-family: 'Inter', sans-serif;
+  background: var(--marble);
+  color: var(--stone-dark);
+}
+
+.hero{
+  background: var(--stone-dark);
+  padding: 90px 24px 70px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(232,226,214,0.05) 0px, transparent 2px),
+    radial-gradient(circle at 80% 60%, rgba(232,226,214,0.04) 0px, transparent 3px),
+    radial-gradient(circle at 40% 80%, rgba(232,226,214,0.05) 0px, transparent 2px),
+    radial-gradient(circle at 65% 15%, rgba(0,0,0,0.3) 0px, transparent 2px),
+    radial-gradient(circle at 25% 55%, rgba(0,0,0,0.25) 0px, transparent 2px);
+  background-size: 300px 300px, 400px 400px, 250px 250px, 350px 350px, 280px 280px;
+  opacity: 0.9;
+}
+.hero-slab{ position:relative; z-index:1; }
+.eyebrow{
+  font-family:'IBM Plex Mono', monospace;
+  letter-spacing: 0.2em;
+  font-size: 12px;
+  color: var(--brass);
+  margin: 0 0 14px;
+}
+.hero h1{
+  font-family:'Space Grotesk', sans-serif;
+  font-weight:700;
+  font-size: clamp(48px, 9vw, 84px);
+  color: var(--marble);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.hero-sub{
+  color: var(--stone-mid);
+  font-size: 17px;
+  margin: 14px 0 0;
+}
+
+main{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:16px;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom: 36px;
+}
+#search{
+  flex: 1 1 240px;
+  padding: 12px 16px;
+  border: 1px solid var(--stone-light);
+  border-radius: var(--radius);
+  font-family:'Inter', sans-serif;
+  font-size: 14px;
+  background: white;
+}
+#search:focus{ outline: 2px solid var(--brass); outline-offset: 1px; }
+
+.filters{ display:flex; gap:8px; flex-wrap:wrap; }
+.filter-btn{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 8px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--stone-light);
+  background: white;
+  color: var(--stone-mid);
+  cursor:pointer;
+  transition: all 0.15s ease;
+}
+.filter-btn:hover{ border-color: var(--brass); color: var(--stone-dark); }
+.filter-btn.active{
+  background: var(--stone-dark);
+  border-color: var(--stone-dark);
+  color: var(--marble);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.card{
+  background: white;
+  border-radius: var(--radius);
+  overflow:hidden;
+  cursor:pointer;
+  border: 1px solid var(--stone-light);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position:relative;
+}
+.card:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(36,33,30,0.12);
+}
+.card:hover::after{
+  content:"";
+  position:absolute;
+  top:0; right:0;
+  width: 26px; height: 26px;
+  background: var(--brass);
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+}
+.card-image{
+  height: 170px;
+  background-size: cover;
+  background-position: center;
+  position:relative;
+}
+.card-speckle{
+  height: 6px;
+  width:100%;
+}
+.card-image-empty, .detail-image-empty{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(232,226,214,0.08) 0px, transparent 3px),
+    radial-gradient(circle at 70% 60%, rgba(232,226,214,0.06) 0px, transparent 2px),
+    radial-gradient(circle at 45% 80%, rgba(0,0,0,0.15) 0px, transparent 3px),
+    radial-gradient(circle at 85% 20%, rgba(0,0,0,0.12) 0px, transparent 2px),
+    var(--stone-dark) !important;
+}
+.card-image-empty span{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 44px;
+  font-weight:700;
+  color: var(--brass);
+  opacity:0.85;
+}
+.detail-image-empty span{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 64px;
+  font-weight:700;
+  color: var(--brass);
+  opacity:0.85;
+}
+.card-body{ padding: 16px 18px 20px; }
+.card-cat{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--brass-dark);
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+.card-body h3{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 19px;
+  margin: 0 0 8px;
+  line-height:1.25;
+}
+.card-meta{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--stone-mid);
+  display:flex;
+  gap:6px;
+}
+
+.empty{
+  grid-column: 1 / -1;
+  text-align:center;
+  color: var(--stone-mid);
+  padding: 60px 0;
+}
+
+footer{
+  text-align:center;
+  padding: 30px;
+  color: var(--stone-mid);
+  font-size: 13px;
+  font-family:'IBM Plex Mono', monospace;
+}
+
+.overlay{
+  position:fixed; inset:0;
+  background: rgba(36,33,30,0.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding: 24px;
+  z-index: 100;
+}
+.overlay.open{ display:flex; }
+
+.detail{
+  background: white;
+  max-width: 720px;
+  width:100%;
+  max-height: 85vh;
+  overflow-y:auto;
+  border-radius: var(--radius);
+  position:relative;
+}
+.detail-image{
+  height: 240px;
+  background-size:cover;
+  background-position:center;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.detail-body{ padding: 28px 32px 36px; }
+.detail-body h2{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 32px;
+  margin: 4px 0 10px;
+}
+.detail-columns{
+  display:grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 32px;
+  margin-top: 24px;
+}
+.detail-columns h4{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brass-dark);
+  margin-bottom: 12px;
+}
+.detail-columns ul, .detail-columns ol{
+  padding-left: 18px;
+  margin: 0;
+  line-height: 1.7;
+  font-size: 14.5px;
+}
+.notes{
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--stone-light);
+  font-size: 14px;
+  color: var(--stone-mid);
+}
+.close-btn{
+  position:absolute;
+  top: 14px; right: 14px;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border:none;
+  background: rgba(255,255,255,0.9);
+  font-size: 20px;
+  cursor:pointer;
+  z-index:2;
+}
+
+@media (max-width: 600px){
+  .detail-columns{ grid-template-columns: 1fr; }
+  .hero{ padding: 60px 20px 50px; }
+}
+</style>
+</body>
+</html>
