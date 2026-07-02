@@ -126,7 +126,7 @@ const RECIPES = [
     notes: "Calorie estimate is per sandwich (bun, 80g pulled pork, ranch, BBQ sauce) without cheese, based on a logged meal. Adding cheese adds roughly 28 cal per 7g serving."
   },
   { title: "CPK Pizza Margherita", category: "Entrees",
-    time: "12 min bake (plus prep)", calories: "~1550 cal (est.) for the whole pizza, ~8 slices",
+    time: "12 min bake (plus prep)", calories: "~1155 cal (est.) for the whole pizza, ~8 slices",
     ingredients: [
       "1 CPK frozen Pizza Margherita",
       "Dried parsley, for sprinkling",
@@ -147,9 +147,25 @@ const RECIPES = [
       "Cut the bacon into bits and scatter them over the pizza.",
       "Top with Parmesan powder and crushed chili powder."
     ],
-    notes: "Whole-pizza estimate combines the CPK Pizza Margherita (1155 cal), 14 slices of Vons pepperoni (~120 cal), and 1 slice of bacon (~40-45 cal), before the Parmesan and chili powder toppings, which add a small amount more. Divide by 8 for a rough per-slice estimate (~195 cal/slice)."
+    notes: "Whole-pizza estimate combines the base CPK Pizza Margherita (990 cal), 14 slices of Vons pepperoni (~120 cal), and 1 slice of bacon (~45 cal), for about 1155 cal total, before the Parmesan and chili powder toppings, which add a small amount more. Divide by 8 for a rough per-slice estimate (~145 cal/slice)."
   },
-  { title: "Hot Dogs", category: "Entrees", ...placeholder() },
+  { title: "Hot Dogs", category: "Entrees",
+    time: "~2 min", calories: "~600 cal (est.) for 2 hot dogs with buns and condiments",
+    ingredients: [
+      "2 standard beef hot dogs (e.g. Oscar Mayer)",
+      "2 hot dog buns",
+      "Ketchup",
+      "Mustard"
+    ],
+    steps: [
+      "Cut a few slits into each hot dog.",
+      "Place the hot dogs on a plate lined with a paper towel.",
+      "Microwave for 23 seconds, flip, and repeat 2 more times (3 rounds total).",
+      "Put each hot dog in a bun.",
+      "Add ketchup and mustard."
+    ],
+    notes: "Calorie estimate is for a 2-hot-dog serving: 2 buns (240 cal) plus 2 links (340 cal), for about 580 cal, plus a normal squeeze of ketchup and mustard (~20 cal combined) for roughly 600 cal total."
+  },
   { title: "Grilled or Pan Fried Steak", category: "Entrees", ...placeholder() },
   { title: "Ground Beef and Egg Burrito", category: "Entrees",
     time: "—", calories: "850 cal per burrito (Sonora tortilla) / 600 cal per burrito (Large tortilla)",
