@@ -57,7 +57,22 @@ function placeholder(){
 const RECIPES = [
   // ---------- ENTREES ----------
   { title: "Burgers and Fries", category: "Entrees", ...placeholder() },
-  { title: "Chicken Nugget", category: "Entrees", ...placeholder() },
+  { title: "Chicken Nugget", category: "Entrees",
+    time: "13 min", calories: "~710 (300g)",
+    image: "images/chicken-nuggets.jpg",
+    ingredients: [
+      "300g Kirkland Signature breaded chicken nuggets (frozen)",
+      "Dipping sauce of choice"
+    ],
+    steps: [
+      "Add the frozen nuggets to the air fryer basket.",
+      "Select the Reheat function, set to 370°F for 13 minutes. (Reheat starts the timer immediately as the air fryer warms up, rather than waiting to preheat first.)",
+      "At the 6-minute mark, pause and shake the basket to redistribute the nuggets.",
+      "Resume cooking until the timer finishes.",
+      "Serve hot with your dipping sauce of choice."
+    ],
+    notes: "Calorie count is estimated from the standard Kirkland Signature whole-grain breaded chicken nugget label (210 cal per 89g), scaled to a 300g portion. Double-check against your specific package if it differs."
+  },
   { title: "Pulled Pork Burger", category: "Entrees", ...placeholder() },
   { title: "CPK Pizza Margherita", category: "Entrees", ...placeholder() },
   { title: "Hot Dogs", category: "Entrees", ...placeholder() },
