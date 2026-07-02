@@ -1165,12 +1165,13 @@ renderGrid();
 
 <style>
 :root{
-  --stone-dark: #24211E;
-  --stone-mid: #6B6459;
-  --stone-light: #E8E2D6;
-  --marble: #F7F4EE;
-  --brass: #B08D57;
-  --brass-dark: #8C6D3F;
+  --stone-dark: #E8E2D6;
+  --stone-mid: #9A9184;
+  --stone-light: #34302A;
+  --marble: #171512;
+  --brass: #C9A469;
+  --brass-dark: #E0B97D;
+  --surface: #211E19;
   --radius: 10px;
 }
 
@@ -1184,7 +1185,7 @@ body{
 }
 
 .hero{
-  background: var(--stone-dark);
+  background: #0B0A08;
   padding: 90px 24px 70px;
   text-align:center;
   position:relative;
@@ -1215,7 +1216,7 @@ body{
   font-family:'Space Grotesk', sans-serif;
   font-weight:700;
   font-size: clamp(48px, 9vw, 84px);
-  color: var(--marble);
+  color: #F7F4EE;
   margin: 0;
   letter-spacing: -0.02em;
 }
@@ -1241,9 +1242,11 @@ main{
   border-radius: var(--radius);
   font-family:'Inter', sans-serif;
   font-size: 14px;
-  background: white;
+  background: var(--surface);
+  color: var(--stone-dark);
 }
 #search:focus{ outline: 2px solid var(--brass); outline-offset: 1px; }
+#search::placeholder{ color: var(--stone-mid); }
 
 .filters{ display:flex; gap:8px; flex-wrap:wrap; }
 .filter-btn{
@@ -1253,16 +1256,16 @@ main{
   padding: 8px 14px;
   border-radius: 100px;
   border: 1px solid var(--stone-light);
-  background: white;
+  background: var(--surface);
   color: var(--stone-mid);
   cursor:pointer;
   transition: all 0.15s ease;
 }
-.filter-btn:hover{ border-color: var(--brass); color: var(--stone-dark); }
+.filter-btn:hover{ border-color: var(--brass); color: var(--brass); }
 .filter-btn.active{
-  background: var(--stone-dark);
-  border-color: var(--stone-dark);
-  color: var(--marble);
+  background: var(--brass);
+  border-color: var(--brass);
+  color: #171512;
 }
 
 .grid{
@@ -1278,7 +1281,7 @@ main{
 }
 
 .card{
-  background: white;
+  background: var(--surface);
   border-radius: var(--radius);
   overflow:hidden;
   cursor:pointer;
@@ -1288,7 +1291,7 @@ main{
 }
 .card:hover{
   transform: translateY(-3px);
-  box-shadow: 0 12px 24px rgba(36,33,30,0.12);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.45);
 }
 .card:hover::after{
   content:"";
@@ -1318,7 +1321,7 @@ main{
     radial-gradient(circle at 70% 60%, rgba(232,226,214,0.06) 0px, transparent 2px),
     radial-gradient(circle at 45% 80%, rgba(0,0,0,0.15) 0px, transparent 3px),
     radial-gradient(circle at 85% 20%, rgba(0,0,0,0.12) 0px, transparent 2px),
-    var(--stone-dark) !important;
+    #0B0A08 !important;
 }
 .card-image-empty span{
   font-family:'Space Grotesk', sans-serif;
@@ -1376,7 +1379,7 @@ main{
 
 .overlay{
   position:fixed; inset:0;
-  background: rgba(36,33,30,0.6);
+  background: rgba(0,0,0,0.75);
   display:none;
   align-items:center;
   justify-content:center;
@@ -1386,7 +1389,7 @@ main{
 .overlay.open{ display:flex; }
 
 .detail{
-  background: white;
+  background: var(--surface);
   max-width: 720px;
   width:100%;
   max-height: 85vh;
@@ -1400,7 +1403,7 @@ main{
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
-  background-color: var(--stone-dark);
+  background-color: #0B0A08;
   border-radius: var(--radius) var(--radius) 0 0;
 }
 .detail-body{ padding: 28px 32px 36px; }
@@ -1442,7 +1445,8 @@ main{
   width: 34px; height: 34px;
   border-radius: 50%;
   border:none;
-  background: rgba(255,255,255,0.9);
+  background: rgba(23,21,18,0.85);
+  color: var(--stone-dark);
   font-size: 20px;
   cursor:pointer;
   z-index:2;
