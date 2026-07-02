@@ -1133,9 +1133,63 @@ function renderGrid(){
 }
 
 let lastFocusedEl = null;
+let wakeLock = null;
+
+// In-memory per-recipe checklist state, keyed by recipe index.
+// Persists for as long as the tab stays open; resets on reload/new tab.
+const checklistState = {};
+
+function getChecklist(idx, r){
+  if(!checklistState[idx]){
+    checklistState[idx] = {
+      ingredients: new Array(r.ingredients.length).fill(false),
+      steps: new Array(r.steps.length).fill(false)
+    };
+  }
+  return checklistState[idx];
+}
+
+function renderChecklist(items, checkedArr, kind){
+  return items.map((text, i) => `
+    <li class="check-item ${checkedArr[i] ? 'checked' : ''}" data-kind="${kind}" data-i="${i}" tabindex="0" role="checkbox" aria-checked="${checkedArr[i]}">
+      <span class="check-box" aria-hidden="true"></span>
+      <span class="check-text">${text}</span>
+    </li>
+  `).join('');
+}
+
+function renderStepChecklist(items, checkedArr){
+  return items.map((text, i) => `
+    <li class="check-item ${checkedArr[i] ? 'checked' : ''}" data-kind="steps" data-i="${i}" tabindex="0" role="checkbox" aria-checked="${checkedArr[i]}">
+      <span class="check-box" aria-hidden="true"></span>
+      <span class="step-num" aria-hidden="true">${i + 1}.</span>
+      <span class="check-text">${text}</span>
+    </li>
+  `).join('');
+}
+
+async function requestWakeLock(){
+  if('wakeLock' in navigator){
+    try{
+      wakeLock = await navigator.wakeLock.request('screen');
+    }catch(e){
+      // Silent no-op fallback: unsupported browser, permission denied, or
+      // page not visible. Cooking still works, screen just may lock.
+      wakeLock = null;
+    }
+  }
+}
+
+function releaseWakeLock(){
+  if(wakeLock){
+    wakeLock.release().catch(() => {});
+    wakeLock = null;
+  }
+}
 
 function openDetail(idx, triggerEl){
   const r = RECIPES[idx];
+  const state = getChecklist(idx, r);
   const detailImage = r.image
     ? `<div class="detail-image" style="background-image:url('${r.image}')"></div>`
     : `<div class="detail-image detail-image-empty"><span>${r.title.charAt(0)}</span></div>`;
@@ -1152,11 +1206,11 @@ function openDetail(idx, triggerEl){
       <div class="detail-columns">
         <div>
           <h4>Ingredients</h4>
-          <ul>${r.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
+          <ul class="check-list" id="ingredientList">${renderChecklist(r.ingredients, state.ingredients, 'ingredients')}</ul>
         </div>
         <div>
           <h4>Steps</h4>
-          <ol>${r.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+          <ol class="check-list" id="stepList">${renderStepChecklist(r.steps, state.steps)}</ol>
         </div>
       </div>
       ${r.notes ? `<p class="notes"><strong>Note:</strong> ${r.notes}</p>` : ''}
@@ -1168,16 +1222,45 @@ function openDetail(idx, triggerEl){
   const closeBtn = document.getElementById('closeBtn');
   closeBtn.onclick = closeDetail;
   closeBtn.focus();
+
+  const toggleItem = (el) => {
+    const kind = el.dataset.kind;
+    const i = Number(el.dataset.i);
+    const newVal = !state[kind][i];
+    state[kind][i] = newVal;
+    el.classList.toggle('checked', newVal);
+    el.setAttribute('aria-checked', String(newVal));
+  };
+
+  detail.querySelectorAll('.check-item').forEach(el => {
+    el.addEventListener('click', () => toggleItem(el));
+    el.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        toggleItem(el);
+      }
+    });
+  });
+
+  requestWakeLock();
 }
 
 function closeDetail(){
   overlay.classList.remove('open');
   document.body.style.overflow = '';
+  releaseWakeLock();
   if(lastFocusedEl){
     lastFocusedEl.focus();
     lastFocusedEl = null;
   }
 }
+
+document.addEventListener('visibilitychange', () => {
+  // Re-acquire the wake lock if the tab regains visibility while a recipe is open
+  if(document.visibilityState === 'visible' && overlay.classList.contains('open')){
+    requestWakeLock();
+  }
+});
 
 document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape' && overlay.classList.contains('open')){
@@ -1486,6 +1569,70 @@ main{
   margin: 0;
   line-height: 1.7;
   font-size: 14.5px;
+}
+.check-list{
+  list-style: none;
+  padding-left: 0;
+}
+.check-item{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+.check-item:hover{
+  background: rgba(184,173,127,0.08);
+}
+.check-item:focus-visible{
+  outline: 2px solid var(--brass);
+  outline-offset: 1px;
+}
+.check-box{
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border: 1.5px solid var(--stone-mid);
+  border-radius: 4px;
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.check-item.checked .check-box{
+  background: var(--brass);
+  border-color: var(--brass);
+}
+.check-item.checked .check-box::after{
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #18191B;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.check-item.checked .check-text{
+  color: var(--stone-mid);
+  opacity: 0.7;
+}
+.check-text{
+  flex: 1 1 auto;
+}
+.step-num{
+  flex: 0 0 auto;
+  color: var(--brass-dark);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  margin-top: 1px;
+}
+.check-item.checked .step-num{
+  color: var(--stone-mid);
+  opacity: 0.7;
 }
 .notes{
   margin-top: 24px;
