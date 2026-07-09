@@ -30,7 +30,10 @@
 
 <main>
   <div class="toolbar">
-    <input id="search" type="text" placeholder="Search recipes or ingredients…" />
+    <div class="search-wrap">
+      <input id="search" type="text" placeholder="Search recipes or ingredients…" />
+      <button id="searchClear" class="search-clear-btn" type="button" aria-label="Clear search" style="display:none;">&times;</button>
+    </div>
     <div class="filters" id="filters"></div>
     <div class="toolbar-actions">
       <button id="macroFilterToggle" class="tool-btn" type="button">Macros <span id="macroFilterBadge" class="tool-badge" style="display:none;"></span></button>
@@ -100,6 +103,8 @@
 <div class="overlay" id="overlay">
   <div class="detail" id="detail"></div>
 </div>
+
+<button id="pageBackToTop" class="page-back-to-top" type="button" aria-label="Back to top">&uarr; Top</button>
 
 <script>
 
@@ -176,6 +181,46 @@ function formatScaledQuantity(value){
   }
   if(Number.isInteger(rounded)) return String(rounded);
   return String(Math.round(rounded * 100) / 100);
+}
+
+// ============================================
+// CALORIE / MACRO SCALER
+// ------------------------------------------------
+// Calories and macros are free text (e.g. "~625 cal (est.) per burger,
+// ~280g", "245 cal per 350g bowl (0.70 cal/gram)"). Rather than trying to
+// rewrite the whole sentence, this scales just the leading absolute
+// number(s) — the total-calorie figure and, where present, the serving
+// weight in grams right after it — and leaves everything else (wording,
+// "per X" descriptions, per-gram rates) untouched. Per-gram rate figures
+// are intentionally left alone since they're already normalized and don't
+// change with serving size.
+// ============================================
+
+function scaleCaloriesText(text, multiplier){
+  if(!text || multiplier === 1) return text;
+  // Scale the first absolute calorie number (e.g. "~625 cal" -> "~1250 cal"),
+  // but skip if that number is actually a per-gram rate (e.g. "0.70 cal/gram").
+  let result = text.replace(/(~?)([\d,]+)(\s*cal)(?!\s*\/\s*g|\s*\/\s*gram)/i, (m, tilde, num, calSuffix) => {
+    const scaled = Math.round(Number(num.replace(/,/g, '')) * multiplier);
+    return `${tilde}${scaled}${calSuffix}`;
+  });
+  // Also scale a leading "~NNNg" or "NNNg" total-weight figure if present
+  // (e.g. "~280g", "~380g cooked"), but only the first one, and only when
+  // it's not part of a per-gram rate expression (already excluded above).
+  result = result.replace(/(~?)([\d,]+)(g\b)/, (m, tilde, num, gSuffix) => {
+    const scaled = Math.round(Number(num.replace(/,/g, '')) * multiplier);
+    return `${tilde}${scaled}${gSuffix}`;
+  });
+  return result;
+}
+
+function scaleMacroValue(val, multiplier){
+  if(val === undefined || val === null || multiplier === 1) return val;
+  if(typeof val === 'number') return Math.round(val * multiplier * 10) / 10;
+  if(typeof val === 'string' && val.includes('/g')) return val; // per-gram rate, don't scale
+  const n = parseFloat(val);
+  if(Number.isNaN(n)) return val;
+  return Math.round(n * multiplier * 10) / 10;
 }
 
 function scaleIngredientText(text, multiplier){
@@ -1637,10 +1682,7 @@ function openDetail(idx, triggerEl){
     <div class="detail-body" id="detailBody">
       <p class="card-cat">${r.category}</p>
       <h2>${r.title}</h2>
-      <div class="card-meta detail-meta-row">
-        <span>${r.calories}</span>
-        ${r.macros ? `<span class="macros">P ${r.macros.protein}${String(r.macros.protein).includes('/g') ? '' : 'g'} &nbsp;C ${r.macros.carbs}${String(r.macros.carbs).includes('/g') ? '' : 'g'} &nbsp;F ${r.macros.fat}${String(r.macros.fat).includes('/g') ? '' : 'g'}</span>` : ''}
-      </div>
+      <div class="card-meta detail-meta-row" id="detailMetaRow"></div>
       <div class="scale-row">
         <span class="scale-label">Scale recipe</span>
         <div class="scale-controls">
@@ -1681,6 +1723,7 @@ function openDetail(idx, triggerEl){
 
   updateProgress(idx);
   updateScaleDisplay(idx);
+  renderDetailMeta(idx);
 
   const toggleItem = (el) => {
     const kind = el.dataset.kind;
@@ -1718,6 +1761,7 @@ function openDetail(idx, triggerEl){
       });
     }
     updateScaleDisplay(idx);
+    renderDetailMeta(idx);
   };
 
   const scaleDownBtn = document.getElementById('scaleDownBtn');
@@ -1786,6 +1830,22 @@ function openDetail(idx, triggerEl){
   requestWakeLock();
 }
 
+function renderDetailMeta(idx){
+  const r = RECIPES[idx];
+  const state = getChecklist(idx, r);
+  const row = document.getElementById('detailMetaRow');
+  if(!row) return;
+  const cal = scaleCaloriesText(r.calories, state.scale);
+  let macrosHtml = '';
+  if(r.macros){
+    const p = scaleMacroValue(r.macros.protein, state.scale);
+    const c = scaleMacroValue(r.macros.carbs, state.scale);
+    const f = scaleMacroValue(r.macros.fat, state.scale);
+    macrosHtml = `<span class="macros">P ${p}${String(p).includes('/g') ? '' : 'g'} &nbsp;C ${c}${String(c).includes('/g') ? '' : 'g'} &nbsp;F ${f}${String(f).includes('/g') ? '' : 'g'}</span>`;
+  }
+  row.innerHTML = `<span>${cal}</span>${macrosHtml}`;
+}
+
 function updateScaleDisplay(idx){
   const r = RECIPES[idx];
   const state = getChecklist(idx, r);
@@ -1822,7 +1882,21 @@ document.addEventListener('keydown', (e) => {
 });
 
 overlay.onclick = (e) => { if(e.target === overlay) closeDetail(); };
-search.addEventListener('input', renderGrid);
+
+const searchClearBtn = document.getElementById('searchClear');
+function updateSearchClearVisibility(){
+  searchClearBtn.style.display = search.value ? 'flex' : 'none';
+}
+search.addEventListener('input', () => {
+  updateSearchClearVisibility();
+  renderGrid();
+});
+searchClearBtn.addEventListener('click', () => {
+  search.value = '';
+  updateSearchClearVisibility();
+  renderGrid();
+  search.focus();
+});
 
 // ---------- Macro filter panel ----------
 const macroFilterToggle = document.getElementById('macroFilterToggle');
@@ -2013,6 +2087,17 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// ---------- Page-level back to top (works on both computer and mobile) ----------
+const pageBackToTop = document.getElementById('pageBackToTop');
+if(pageBackToTop){
+  window.addEventListener('scroll', () => {
+    pageBackToTop.classList.toggle('visible', window.scrollY > 400);
+  });
+  pageBackToTop.onclick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+}
+
 renderFilters();
 renderGrid();
 </script>
@@ -2089,9 +2174,15 @@ main{
   justify-content:space-between;
   margin-bottom: 36px;
 }
-#search{
+.search-wrap{
+  position: relative;
   flex: 1 1 240px;
-  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+}
+#search{
+  width: 100%;
+  padding: 12px 38px 12px 16px;
   border: 1px solid var(--stone-light);
   border-radius: var(--radius);
   font-family:'Inter', sans-serif;
@@ -2101,6 +2192,33 @@ main{
 }
 #search:focus{ outline: 2px solid var(--brass); outline-offset: 1px; }
 #search::placeholder{ color: var(--stone-mid); }
+.search-clear-btn{
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--stone-mid);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.search-clear-btn:hover{
+  color: var(--brass);
+  background: rgba(184,173,127,0.12);
+}
+.search-clear-btn:focus-visible{
+  outline: 2px solid var(--brass);
+  outline-offset: 1px;
+}
 
 .filters{ display:flex; gap:8px; flex-wrap:wrap; }
 .toolbar-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
@@ -2526,6 +2644,48 @@ main{
   pointer-events: auto;
 }
 
+.page-back-to-top{
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 10px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--brass);
+  background: var(--surface);
+  color: var(--brass);
+  cursor:pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  z-index: 50;
+}
+.page-back-to-top.visible{
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.page-back-to-top:hover{
+  border-color: var(--brass-dark);
+  color: var(--brass-dark);
+}
+.page-back-to-top:focus-visible{
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
+@media (max-width: 600px){
+  .page-back-to-top{
+    bottom: 16px;
+    right: 16px;
+    padding: 9px 14px;
+    font-size: 11px;
+  }
+}
+
 .empty{
   grid-column: 1 / -1;
   text-align:center;
@@ -2684,7 +2844,7 @@ main{
 
 @media print{
   body{ background: #fff; color: #111; }
-  .hero, .toolbar, .macro-panel, .close-btn, .progress-row, .scale-row, .back-to-top-btn, main{ display: none !important; }
+  .hero, .toolbar, .macro-panel, .close-btn, .progress-row, .scale-row, .back-to-top-btn, .page-back-to-top, main{ display: none !important; }
   .overlay{
     position: static;
     background: none;
