@@ -2284,11 +2284,11 @@ main{
   max-height: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.25s ease;
+  transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.25s ease;
   margin-bottom: 0;
 }
 .macro-panel.open{
-  max-height: 200px;
+  max-height: 600px;
   opacity: 1;
   margin-bottom: 28px;
 }
@@ -2840,6 +2840,13 @@ main{
   .detail-columns{ grid-template-columns: 1fr; }
   .detail-body{ padding: 22px 18px 28px; }
   .hero{ padding: 60px 20px 50px; }
+  .macro-panel-row{
+    gap: 18px;
+    padding: 16px;
+  }
+  .macro-slider-group{
+    flex-basis: 100%;
+  }
 }
 
 @media print{
