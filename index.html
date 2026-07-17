@@ -111,15 +111,15 @@
 
 function placeholder(){
   return {
-    time: "—",
-    calories: "—",
+    time: "-",
+    calories: "-",
     ingredients: ["Add ingredients here"],
     steps: ["Add steps here"]
   };
 }
 
 // ============================================
-// SERVING SCALER — best-effort quantity parsing
+// SERVING SCALER - best-effort quantity parsing
 // ------------------------------------------------
 // Ingredient strings are free text (e.g. "2 lbs 80/20 ground beef",
 // "1½ slices ham", "11–12 large eggs"). This parses a leading quantity
@@ -131,7 +131,7 @@ function placeholder(){
 const UNICODE_FRACTIONS = { '½':0.5, '⅓':1/3, '⅔':2/3, '¼':0.25, '¾':0.75, '⅛':0.125, '⅜':0.375, '⅝':0.625, '⅞':0.875 };
 
 function parseLeadingQuantity(str){
-  // Skip ranges entirely (e.g. "11–12 large eggs", "30 min-2 hr") — scaling
+  // Skip ranges entirely (e.g. "11–12 large eggs", "30 min-2 hr") - scaling
   // a range is ambiguous, so leave the original text untouched.
   if(/^\d+\s*[–\-]\s*\d/.test(str)) return null;
   // Matches things like: "2", "2.5", "1/3", "1 1/3", "1½", "2½", "300"
@@ -189,8 +189,8 @@ function formatScaledQuantity(value){
 // Calories and macros are free text (e.g. "~625 cal (est.) per burger,
 // ~280g", "245 cal per 350g bowl (0.70 cal/gram)"). Rather than trying to
 // rewrite the whole sentence, this scales just the leading absolute
-// number(s) — the total-calorie figure and, where present, the serving
-// weight in grams right after it — and leaves everything else (wording,
+// number(s) - the total-calorie figure and, where present, the serving
+// weight in grams right after it - and leaves everything else (wording,
 // "per X" descriptions, per-gram rates) untouched. Per-gram rate figures
 // are intentionally left alone since they're already normalized and don't
 // change with serving size.
@@ -262,7 +262,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
       "Add ketchup and mustard.",
       "Assemble and serve with a potato side of your choice."
     ],
-    notes: "The Kirkland Signature green-bag patty is the Grass-Fed Beef Patties, 1/3 lb (80% lean/20% fat) — about 380 cal per raw patty. Calorie estimate adds the bun (~120 cal), Kraft single (50 cal), and a normal amount of mayo/ketchup/mustard combined (~75 cal) on top of that, for roughly 625 cal total — doesn't include the potato side."
+    notes: "The Kirkland Signature green-bag patty is the Grass-Fed Beef Patties, 1/3 lb (80% lean/20% fat) - about 380 cal per raw patty. Calorie estimate adds the bun (~120 cal), Kraft single (50 cal), and a normal amount of mayo/ketchup/mustard combined (~75 cal) on top of that, for roughly 625 cal total - doesn't include the potato side."
   },
   { title: "Chicken Nugget", category: "Entrees",
     time: "13 min", calories: "~710 cal (300g)",
@@ -282,7 +282,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
     notes: "Calorie count is estimated from the standard Kirkland Signature whole-grain breaded chicken nugget label (210 cal per 89g), scaled to a 300g portion. Double-check against your specific package if it differs."
   },
   { title: "Pulled Pork Burger", category: "Entrees",
-    time: "—", calories: "~485 cal per sandwich (without cheese)",
+    time: "-", calories: "~485 cal per sandwich (without cheese)",
     macros: { protein: 28, carbs: 45, fat: 20 },
     image: "image/pulled-pork.jpeg",
     ingredients: [
@@ -353,7 +353,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
     notes: "Calorie estimate is for a 2-hot-dog serving: 2 buns (240 cal) plus 2 links (340 cal), for about 580 cal, plus a normal squeeze of ketchup and mustard (~20 cal combined) for roughly 600 cal total."
   },
   { title: "Rántott Hús", category: "Entrees",
-    time: "—", calories: "~420 cal (est.) per thigh, ~180g cooked",
+    time: "-", calories: "~420 cal (est.) per thigh, ~180g cooked",
     macros: { protein: 30, carbs: 22, fat: 24 },
     image: "image/rantott-hus.jpeg",
     ingredients: [
@@ -507,6 +507,41 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
     ],
     notes: "Calorie estimate assumes about 1 fillet's worth of fish per person (served as 2-3 cut pieces) and ¾ of a plantain per person for the patacones, both breaded/fried in oil. Actual fillet size and oil absorption will shift this."
   },
+  { title: "Currywurst", category: "Entrees",
+    time: "~30 min", calories: "~670 cal (est.) per serving, serves 4",
+    macros: { protein: 28, carbs: 48, fat: 40 },
+    image: "image/currywurst.jpeg",
+    ingredients: [
+      "8 brats",
+      "Olive oil",
+      "1 red onion, cubed",
+      "2 cups ketchup",
+      "3 tbsp tomato sauce",
+      "2 tbsp water (for deglazing)",
+      "2 tbsp honey",
+      "1 tsp soy sauce",
+      "2 tbsp curry powder",
+      "1 tbsp chili powder or cayenne",
+      "Optional: 2 tbsp balsamic vinegar (for tang)",
+      "Optional: 1 tsp apple cider vinegar (for tang)",
+      "Potatoes, for pommes (fries)"
+    ],
+    steps: [
+      "Heat a pan with olive oil over low/medium heat, and cube the red onion.",
+      "Add the onion to the pan and fry until translucent.",
+      "Add the tomato sauce and cook the onions over medium-high heat for a few minutes.",
+      "Deglaze with 2 tbsp of water.",
+      "Add the ketchup and honey and cook over medium-low heat for a few minutes.",
+      "Stir in the soy sauce, chili powder (or cayenne), and curry powder.",
+      "Blend with an immersion blender until somewhat smooth. If you want it thinner, add more water.",
+      "Make the pommes (fries) and grill the wursts, about 3-5 minutes per side or until browning.",
+      "Cut the wursts into small slices.",
+      "Mix the wurst slices with the sauce.",
+      "To plate: add the saucy wurst to a flat plate with fries on the side.",
+      "Eat the wurst slices with a toothpick and dip the fries into the sauce."
+    ],
+    notes: "Optional balsamic and apple cider vinegar can be stirred in with the soy sauce and curry powder for extra tang. Calorie estimate assumes 8 standard bratwurst links plus the ketchup-based curry sauce, split across 4 servings (2 wursts' worth of meat and sauce per serving) - doesn't include the fries. Actual bratwurst brand/fat content will shift this."
+  },
 
   // ---------- SANDWICHES ----------
   { title: "Grilled Steak", category: "Entrees",
@@ -593,7 +628,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
       "Finish with the last 2 sliced potatoes, sprinkle with salt, spread the remaining cream mixture to fully cover the potatoes, and top with a final layer of bread crumbs.",
       "Bake at 425°F for 45 minutes, until golden brown on top."
     ],
-    notes: "Layered casserole: potato rounds on the bottom, red paprika-flecked sausage half-moons, sliced hard-boiled egg, a runny sour cream layer poured over, and bread crumbs between each layer and on top. Finished dish is golden and browned on top with visible potato rounds peeking through. Calorie estimate (~4,350 cal total dish / 8 servings) based on 6 large potatoes, 6 eggs, 1.5 smoked sausage links, 32 oz sour cream, 1 cup milk, butter, and bread crumbs — actual sausage fat content and cream brand will shift this."
+    notes: "Layered casserole: potato rounds on the bottom, red paprika-flecked sausage half-moons, sliced hard-boiled egg, a runny sour cream layer poured over, and bread crumbs between each layer and on top. Finished dish is golden and browned on top with visible potato rounds peeking through. Calorie estimate (~4,350 cal total dish / 8 servings) based on 6 large potatoes, 6 eggs, 1.5 smoked sausage links, 32 oz sour cream, 1 cup milk, butter, and bread crumbs - actual sausage fat content and cream brand will shift this."
   },
   { title: "Lencse", category: "Entrees",
     time: "20 min", calories: "~860 cal (est.) for the full recipe, ~640g bowl",
@@ -617,7 +652,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
     notes: "Calorie estimate based on: 1 Costco Tasty Bite Madras Lentils pouch (~290 cal), ½ cup dry rice cooked (~335 cal), 1.5 slices ham (~45 cal), plus a garnish of shredded cheese and crackers (~190 cal). Adjust based on your actual garnish amounts."
   },
   { title: "Ground Beef and Egg Burrito", category: "Entrees",
-    time: "—", calories: "850 cal per burrito (Sonora tortilla) / 600 cal per burrito (Large tortilla)",
+    time: "-", calories: "850 cal per burrito (Sonora tortilla) / 600 cal per burrito (Large tortilla)",
     macros: { protein: 45, carbs: 55, fat: 42 },
     ingredients: [
       "2 lbs 80/20 ground beef",
@@ -718,7 +753,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
       "Season with salt and pepper.",
       "Top with microgreens or spring mix."
     ],
-    notes: "Served cold, straight assembly (no toasting). Calorie estimate combines 2 slices of bread (~150 cal), 2 slices deli turkey (~56 cal), ~2 oz Kirkland Signature smoked sausage (~171 cal, based on the Kirkland Signature Beef Polish Sausage label of 370 cal per 123g link, scaled down), 1 Kraft single (50 cal), 1 boiled egg (~78 cal), and a light amount of mayo, mustard, and greens (~55 cal combined), for roughly 560 cal total. The mayo/mustard/greens portion is the roughest part of this estimate since those weren't given exact amounts — let me know if you want it tightened."
+    notes: "Served cold, straight assembly (no toasting). Calorie estimate combines 2 slices of bread (~150 cal), 2 slices deli turkey (~56 cal), ~2 oz Kirkland Signature smoked sausage (~171 cal, based on the Kirkland Signature Beef Polish Sausage label of 370 cal per 123g link, scaled down), 1 Kraft single (50 cal), 1 boiled egg (~78 cal), and a light amount of mayo, mustard, and greens (~55 cal combined), for roughly 560 cal total. The mayo/mustard/greens portion is the roughest part of this estimate since those weren't given exact amounts - let me know if you want it tightened."
   },
 
   // ---------- SOUPS ----------
@@ -745,7 +780,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
       "Add about one serving of classic Goldfish crackers into the soup.",
       "Dip the grilled cheese slices into the soup to serve."
     ],
-    notes: "Calorie estimate combines a serving of soup (either variant), the buttered grilled cheese sandwich, and the Goldfish crackers. The tomato-sauce version is noticeably lighter than the canned-soup version — actual calories depend on which you use, your shredded cheese amount, and how much butter goes on the bread."
+    notes: "Calorie estimate combines a serving of soup (either variant), the buttered grilled cheese sandwich, and the Goldfish crackers. The tomato-sauce version is noticeably lighter than the canned-soup version - actual calories depend on which you use, your shredded cheese amount, and how much butter goes on the bread."
   },
   { title: "Tortilla Soup", category: "Soups",
     time: "6-8 hr (slow cooker)", calories: "~320 cal (est.) per serving (excludes garnish), ~500g, based on ~10 servings",
@@ -884,7 +919,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
       "Microwave.",
       "Only after microwaving, add the other two packets (sauce and flakes)."
     ],
-    notes: "This ordering (water and noodles first, microwave, then the seasoning and flake packets after) differs from Nongshim's standard printed instructions, which typically have you add all the packets before microwaving — follow your own order here rather than the package if they conflict."
+    notes: "This ordering (water and noodles first, microwave, then the seasoning and flake packets after) differs from Nongshim's standard printed instructions, which typically have you add all the packets before microwaving - follow your own order here rather than the package if they conflict."
   },
 
   // ---------- SIDES ----------
@@ -1078,13 +1113,13 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
       "Add the eggs and mix again.",
       "Add the salt and sugar, and mix again.",
       "Add the milk and mix until creamy with no clumps.",
-      "Add club soda a couple oz at a time, mixing as you go, until the batter is closer to liquid than cream (this used most of a 12 oz bottle — have a second one ready to add a couple oz at a time while cooking).",
+      "Add club soda a couple oz at a time, mixing as you go, until the batter is closer to liquid than cream (this used most of a 12 oz bottle - have a second one ready to add a couple oz at a time while cooking).",
       "During the club soda phase, also add a 2-second slow pour of oil and mix in.",
       "Heat a pan to just under high heat.",
       "For only the first palacsinta, place the lid on top of the pan to warm it up.",
       "Once the pan is hot, add a little oil and coat the bottom.",
       "Pour a third of a ladle into the pan.",
-      "Rotate the pan left, then clockwise, while pouring in half the ladle — the rotation should take 3-4 seconds.",
+      "Rotate the pan left, then clockwise, while pouring in half the ladle - the rotation should take 3-4 seconds.",
       "Once the palacsinta starts having bubbles, check the bottom; flip once it's browned.",
       "It's finished when the second side starts getting brown spots.",
       "Slide onto a plate and cover with the lid to keep warm.",
@@ -1095,7 +1130,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
       "Roll up the palacsinta. Good served with a glass of milk.",
       "Take your time."
     ],
-    notes: "Makes about 20 palacsinta from the batter, each about 8-10in in diameter. Nutella is used generously, about 1 tbsp per palacsinta rather than a thin drizzle. Calorie estimate is a rough per-piece figure for one filled, rolled palacsinta (thin crepe-style batter, scaled up for the larger diameter, plus that ~1 tbsp Nutella and cottage cheese filling) — actual calories depend on your exact filling amount."
+    notes: "Makes about 20 palacsinta from the batter, each about 8-10in in diameter. Nutella is used generously, about 1 tbsp per palacsinta rather than a thin drizzle. Calorie estimate is a rough per-piece figure for one filled, rolled palacsinta (thin crepe-style batter, scaled up for the larger diameter, plus that ~1 tbsp Nutella and cottage cheese filling) - actual calories depend on your exact filling amount."
   },
   { title: "Blueberry Muffins", category: "Dessert",
     time: "21 min bake (plus prep)", calories: "~500 cal (est.) per serving, 2 muffins + butter + 1 cup milk",
@@ -1195,7 +1230,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
       "Add ice.",
       "Shake to combine."
     ],
-    notes: "Calorie estimate assumes a standard chocolate whey/protein powder at about 120 cal per scoop (~150 cal for 1.25 scoops) plus roughly 5 cal for the instant coffee; water and ice are calorie-free. Actual calories depend heavily on your specific protein powder brand — check its label and adjust if it differs."
+    notes: "Calorie estimate assumes a standard chocolate whey/protein powder at about 120 cal per scoop (~150 cal for 1.25 scoops) plus roughly 5 cal for the instant coffee; water and ice are calorie-free. Actual calories depend heavily on your specific protein powder brand - check its label and adjust if it differs."
   },
   { title: "Hot Cocoa", category: "Drinks",
     time: "~3 min", calories: "~270 cal (est.) per 8 oz serving",
@@ -1214,7 +1249,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
       "Transfer the hot milk into the mug with the mixed hot cocoa.",
       "Stir, then top with whipped cream."
     ],
-    notes: "Calorie estimate combines 8 oz milk (~150 cal), 1 generic hot cocoa packet (~90 cal, based on typical packets in the 80-100 cal range — actual brand will shift this), and a normal squirt of canned whipped cream like Reddi-wip (~30 cal), for roughly 270 cal total. Let me know your actual hot cocoa brand if you want the packet figure tightened up."
+    notes: "Calorie estimate combines 8 oz milk (~150 cal), 1 generic hot cocoa packet (~90 cal, based on typical packets in the 80-100 cal range - actual brand will shift this), and a normal squirt of canned whipped cream like Reddi-wip (~30 cal), for roughly 270 cal total. Let me know your actual hot cocoa brand if you want the packet figure tightened up."
   },
 
   // ---------- SAUCES / EXTRAS ----------
@@ -1243,7 +1278,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
 ];
 
 /* ============================================
-   TEMPLATE — copy this to add a new dish
+   TEMPLATE - copy this to add a new dish
    (replace one of the placeholder ones, or add new):
 
    { title: "Recipe Name", category: "Entrees",
@@ -1255,7 +1290,7 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
    ============================================ */
 
 /* ============================================
-   RENDER LOGIC — no need to touch below this line
+   RENDER LOGIC - no need to touch below this line
    ============================================ */
 
 const grid = document.getElementById('grid');
@@ -1298,7 +1333,7 @@ function speckleBackground(i){
 }
 
 // ============================================
-// PLACEHOLDER ART — abstract, on-brand pattern
+// PLACEHOLDER ART - abstract, on-brand pattern
 // ------------------------------------------------
 // Replaces the plain single-letter tile with a deterministic (per-recipe,
 // stable across reloads) arrangement of thin brass rings/lines plus the
@@ -1351,7 +1386,7 @@ function categoryCount(cat){
 }
 
 // ============================================
-// MACRO PARSING — best-effort extraction from
+// MACRO PARSING - best-effort extraction from
 // free-text calorie/macro fields for filtering
 // ============================================
 
@@ -1359,7 +1394,7 @@ function parseCaloriesNumber(r){
   // Only handles per-serving absolute calorie figures (e.g. "~625 cal", "500 cal per sandwich",
   // "245 cal per 350g bowl (0.70 cal/gram)"). Excludes fields where a per-gram figure is the
   // PRIMARY (leading) value, since that's not a per-serving amount without knowing serving weight
-  // — but a per-gram figure mentioned parenthetically after a primary per-serving number is fine
+  // - but a per-gram figure mentioned parenthetically after a primary per-serving number is fine
   // to ignore, since the leading match already captures the per-serving figure.
   if(!r.calories) return null;
   if(/^\s*[\d.]+\s*cal\s*\/\s*g|^\s*[\d.]+\s*cal\s*\/\s*gram|^\s*[\d.]+\s*cal\/gram/i.test(r.calories)) return null;
@@ -1442,7 +1477,7 @@ function macroFiltersActive(){
 }
 
 // ============================================
-// SHOPPING LIST — simple flat list, raw ingredient
+// SHOPPING LIST - simple flat list, raw ingredient
 // text appended as-is (duplicates allowed), in-memory only
 // ============================================
 
