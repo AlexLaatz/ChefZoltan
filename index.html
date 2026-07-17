@@ -1719,13 +1719,14 @@ function openDetail(idx, triggerEl){
       <h2>${r.title}</h2>
       <div class="card-meta detail-meta-row" id="detailMetaRow"></div>
       <div class="scale-row">
-        <span class="scale-label">Scale recipe</span>
-        <div class="scale-controls">
-          <button class="scale-btn" id="scaleDownBtn" type="button" aria-label="Halve amounts">&minus;</button>
-          <span class="scale-value" id="scaleValue">1x</span>
-          <button class="scale-btn" id="scaleUpBtn" type="button" aria-label="Double amounts">&plus;</button>
-          <button class="scale-reset-btn" id="scaleResetBtn" type="button">Reset</button>
+        <div class="scale-row-top">
+          <span class="scale-label">Scale recipe</span>
+          <div class="scale-controls">
+            <span class="scale-value" id="scaleValue">1x</span>
+            <button class="scale-reset-btn" id="scaleResetBtn" type="button">Reset</button>
+          </div>
         </div>
+        <input type="range" id="scaleSlider" class="scale-slider" min="0.25" max="4" step="0.05" value="1" aria-label="Scale recipe amounts">
       </div>
       <div class="progress-row">
         <span id="progressIndicator" class="progress-indicator"></span>
@@ -1780,7 +1781,6 @@ function openDetail(idx, triggerEl){
     });
   });
 
-  const SCALE_STEPS = [0.5, 1, 1.5, 2, 3];
   const rerenderIngredients = () => {
     const list = document.getElementById('ingredientList');
     if(list){
@@ -1799,26 +1799,19 @@ function openDetail(idx, triggerEl){
     renderDetailMeta(idx);
   };
 
-  const scaleDownBtn = document.getElementById('scaleDownBtn');
-  const scaleUpBtn = document.getElementById('scaleUpBtn');
+  const scaleSlider = document.getElementById('scaleSlider');
   const scaleResetBtn = document.getElementById('scaleResetBtn');
-  if(scaleDownBtn && scaleUpBtn){
-    scaleDownBtn.onclick = () => {
-      const i = SCALE_STEPS.indexOf(state.scale);
-      const nextIdx = i > 0 ? i - 1 : (i === -1 ? 1 : 0);
-      state.scale = SCALE_STEPS[Math.max(0, nextIdx)];
+  if(scaleSlider){
+    scaleSlider.value = state.scale;
+    scaleSlider.addEventListener('input', () => {
+      state.scale = Number(scaleSlider.value);
       rerenderIngredients();
-    };
-    scaleUpBtn.onclick = () => {
-      const i = SCALE_STEPS.indexOf(state.scale);
-      const nextIdx = i > -1 ? i + 1 : SCALE_STEPS.length - 1;
-      state.scale = SCALE_STEPS[Math.min(SCALE_STEPS.length - 1, nextIdx)];
-      rerenderIngredients();
-    };
+    });
   }
   if(scaleResetBtn){
     scaleResetBtn.onclick = () => {
       state.scale = 1;
+      if(scaleSlider) scaleSlider.value = 1;
       rerenderIngredients();
     };
   }
@@ -1887,7 +1880,15 @@ function updateScaleDisplay(idx){
   const el = document.getElementById('scaleValue');
   if(el){
     const s = state.scale;
-    el.textContent = (Number.isInteger(s) ? s : s.toFixed(1)) + 'x';
+    // Show as few decimals as needed (up to 2) so e.g. 1.25x doesn't get
+    // truncated to 1.3x, but a clean value like 2 still shows as "2x".
+    const rounded = Math.round(s * 100) / 100;
+    const label = Number.isInteger(rounded) ? String(rounded) : String(rounded.toFixed(2)).replace(/0$/, '').replace(/\.$/, '');
+    el.textContent = label + 'x';
+  }
+  const slider = document.getElementById('scaleSlider');
+  if(slider && Number(slider.value) !== state.scale){
+    slider.value = state.scale;
   }
 }
 
@@ -2582,11 +2583,16 @@ main{
 
 .scale-row{
   display:flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+}
+.scale-row-top{
+  display:flex;
   align-items:center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 18px;
 }
 .scale-label{
   font-family:'IBM Plex Mono', monospace;
@@ -2600,24 +2606,11 @@ main{
   align-items:center;
   gap: 10px;
 }
-.scale-btn{
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid var(--stone-light);
-  background: var(--surface);
-  color: var(--stone-dark);
-  font-size: 16px;
-  line-height: 1;
-  cursor:pointer;
-  transition: all 0.15s ease;
-}
-.scale-btn:hover{ border-color: var(--brass); color: var(--brass); }
 .scale-value{
   font-family:'IBM Plex Mono', monospace;
   font-size: 13px;
   color: var(--brass-dark);
-  min-width: 32px;
+  min-width: 36px;
   text-align:center;
 }
 .scale-reset-btn{
@@ -2633,6 +2626,33 @@ main{
   transition: all 0.15s ease;
 }
 .scale-reset-btn:hover{ border-color: var(--brass); color: var(--brass); }
+.scale-slider{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--stone-light);
+  outline: none;
+}
+.scale-slider::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brass);
+  cursor: pointer;
+  border: 2px solid #18191B;
+}
+.scale-slider::-moz-range-thumb{
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brass);
+  cursor: pointer;
+  border: 2px solid #18191B;
+}
 
 .shopping-list-detail{
   max-width: 560px;
