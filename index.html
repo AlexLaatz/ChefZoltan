@@ -1588,8 +1588,16 @@ function renderGrid(){
     return;
   }
 
+  let lastCategory = null;
   filtered.forEach((r) => {
     const idx = RECIPES.indexOf(r);
+    if(activeCategory === 'All' && r.category !== lastCategory){
+      const sep = document.createElement('div');
+      sep.className = 'category-separator';
+      sep.innerHTML = `<span class="category-separator-label">${r.category}</span>`;
+      grid.appendChild(sep);
+      lastCategory = r.category;
+    }
     const card = document.createElement('article');
     card.className = 'card';
     const imageBlock = r.image
@@ -2451,6 +2459,34 @@ main{
   .grid{
     grid-template-columns: repeat(4, 1fr);
   }
+}
+
+.category-separator{
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+  padding-bottom: 4px;
+}
+.category-separator:first-child{
+  margin-top: 0;
+}
+.category-separator-label{
+  font-family:'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--brass-dark);
+  white-space: nowrap;
+}
+.category-separator::after{
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: linear-gradient(to right, var(--brass), var(--stone-light) 60%, transparent);
+  opacity: 0.5;
 }
 
 .card{
