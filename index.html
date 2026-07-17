@@ -1295,6 +1295,57 @@ const RECIPES = [  { title: "Burgers", category: "Entrees",
 
 const grid = document.getElementById('grid');
 const search = document.getElementById('search');
+
+// Draws in the gold underline on each category separator once it scrolls
+// into view, rather than having it already fully drawn on page load.
+const separatorObserver = ('IntersectionObserver' in window)
+  ? new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          entry.target.classList.add('line-drawn');
+          separatorObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 })
+  : null;
+
+function observeSeparator(sep){
+  if(separatorObserver){
+    separatorObserver.observe(sep);
+  } else {
+    // No IntersectionObserver support: just show the line immediately
+    sep.classList.add('line-drawn');
+  }
+}
+
+// Shared open/close helpers for both overlays (recipe detail + shopping list),
+// so the scale/fade entrance animation is consistent between them. 'open' is
+// applied immediately (display:flex), then 'overlay-visible' one frame later
+// so the CSS transition actually has a starting state to animate from.
+function openOverlayAnimated(overlayEl){
+  overlayEl.classList.add('open');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => overlayEl.classList.add('overlay-visible'));
+  });
+}
+function closeOverlayAnimated(overlayEl, onDone){
+  overlayEl.classList.remove('overlay-visible');
+  const detailEl = overlayEl.querySelector('.detail');
+  let finished = false;
+  const finish = () => {
+    if(finished) return;
+    finished = true;
+    overlayEl.classList.remove('open');
+    if(onDone) onDone();
+  };
+  if(detailEl){
+    detailEl.addEventListener('transitionend', finish, { once: true });
+    // Safety fallback in case transitionend doesn't fire (e.g. reduced-motion, or display swap edge cases)
+    setTimeout(finish, 260);
+  } else {
+    finish();
+  }
+}
 const filtersEl = document.getElementById('filters');
 const overlay = document.getElementById('overlay');
 const detail = document.getElementById('detail');
@@ -1489,10 +1540,13 @@ function addRecipeToShoppingList(recipeTitle, ingredientTexts){
     shoppingList.push({ id: ++shoppingListIdCounter, text, recipeTitle, checked: false });
   });
   renderShoppingList();
-  updateShoppingListBadge();
+  updateShoppingListBadge(true);
 }
 
-function updateShoppingListBadge(){
+// bump: whether to play the little "badge confirms the add landed" bounce.
+// Only used when items are actually added, not on clear/reset, since a
+// bounce on removal would read as celebrating the wrong thing.
+function updateShoppingListBadge(bump){
   const badge = document.getElementById('shoppingListBadge');
   if(!badge) return;
   if(shoppingList.length === 0){
@@ -1500,6 +1554,13 @@ function updateShoppingListBadge(){
   } else {
     badge.style.display = 'inline';
     badge.textContent = shoppingList.length;
+    if(bump){
+      badge.classList.remove('badge-bump');
+      // Force reflow so re-triggering the animation on rapid consecutive
+      // adds restarts it instead of being a no-op (class already present).
+      void badge.offsetWidth;
+      badge.classList.add('badge-bump');
+    }
   }
 }
 
@@ -1545,7 +1606,7 @@ function renderFilters(){
     const btn = document.createElement('button');
     btn.innerHTML = `${cat} <span class="filter-count">${categoryCount(cat)}</span>`;
     btn.className = 'filter-btn' + (cat === activeCategory ? ' active' : '');
-    btn.onclick = () => { activeCategory = cat; renderFilters(); renderGrid(); };
+    btn.onclick = () => { activeCategory = cat; renderFilters(); renderGrid(true); };
     filtersEl.appendChild(btn);
   });
 }
@@ -1568,7 +1629,12 @@ function formatMacro(val){
   return val + 'g';
 }
 
-function renderGrid(){
+// animateEntry: whether to play the staggered fade-in for this render pass.
+// Intentionally left off for search-input-triggered renders (see the
+// search listener below) since re-staggering on every keystroke would feel
+// laggy rather than delightful - it's reserved for initial load and
+// category-filter switches, which are more "new view" moments.
+function renderGrid(animateEntry){
   const query = search.value.trim().toLowerCase();
   grid.innerHTML = '';
 
@@ -1589,6 +1655,7 @@ function renderGrid(){
   }
 
   let lastCategory = null;
+  let entryIndex = 0; // separate counter from array idx, so stagger delay is visual-order based
   filtered.forEach((r) => {
     const idx = RECIPES.indexOf(r);
     if(activeCategory === 'All' && r.category !== lastCategory){
@@ -1597,6 +1664,12 @@ function renderGrid(){
       sep.innerHTML = `<span class="category-separator-label">${r.category}</span>`;
       grid.appendChild(sep);
       lastCategory = r.category;
+      observeSeparator(sep);
+      if(animateEntry){
+        sep.classList.add('card-enter');
+        sep.style.animationDelay = `${Math.min(entryIndex, 20) * 25}ms`;
+        entryIndex++;
+      }
     }
     const card = document.createElement('article');
     card.className = 'card';
@@ -1636,6 +1709,12 @@ function renderGrid(){
         openDetail(idx, card);
       }
     };
+    if(animateEntry){
+      card.classList.add('card-enter');
+      // Cap the stagger so a full 38-recipe grid doesn't take forever to finish appearing
+      card.style.animationDelay = `${Math.min(entryIndex, 20) * 25}ms`;
+      entryIndex++;
+    }
     grid.appendChild(card);
   });
 }
@@ -1759,7 +1838,7 @@ function openDetail(idx, triggerEl){
     ${isLong ? `<button class="back-to-top-btn" id="backToTopBtn" type="button" aria-label="Back to top">&uarr; Top</button>` : ''}
   `;
   lastFocusedEl = triggerEl || document.activeElement;
-  overlay.classList.add('open');
+  openOverlayAnimated(overlay);
   document.body.style.overflow = 'hidden';
   const closeBtn = document.getElementById('closeBtn');
   closeBtn.onclick = closeDetail;
@@ -1789,7 +1868,7 @@ function openDetail(idx, triggerEl){
     });
   });
 
-  const rerenderIngredients = () => {
+  const rerenderIngredients = (pulse) => {
     const list = document.getElementById('ingredientList');
     if(list){
       list.innerHTML = renderChecklist(r.ingredients.map(t => scaleIngredientText(t, state.scale)), state.ingredients, 'ingredients');
@@ -1802,6 +1881,13 @@ function openDetail(idx, triggerEl){
           }
         });
       });
+      // Briefly highlight the quantities so it's visually obvious they just
+      // updated. Only when the scale actually changed (pulse=true) - not on
+      // every ingredient check/uncheck, which also calls this indirectly
+      // via toggleItem in some flows.
+      if(pulse){
+        list.querySelectorAll('.check-text').forEach(el => el.classList.add('qty-pulse'));
+      }
     }
     updateScaleDisplay(idx);
     renderDetailMeta(idx);
@@ -1823,14 +1909,19 @@ function openDetail(idx, triggerEl){
     }
     state.scale = Math.min(SCALE_MAX, Math.max(SCALE_MIN, n));
     if(scaleSlider) scaleSlider.value = state.scale;
-    rerenderIngredients();
+    rerenderIngredients(true);
   };
 
   if(scaleSlider){
     scaleSlider.value = state.scale;
+    // Live-drag updates skip the pulse (would flicker continuously while
+    // dragging); the pulse plays on release instead, via 'change'.
     scaleSlider.addEventListener('input', () => {
       state.scale = Number(scaleSlider.value);
       rerenderIngredients();
+    });
+    scaleSlider.addEventListener('change', () => {
+      rerenderIngredients(true);
     });
   }
   if(scaleValueInput){
@@ -1845,7 +1936,7 @@ function openDetail(idx, triggerEl){
     scaleResetBtn.onclick = () => {
       state.scale = 1;
       if(scaleSlider) scaleSlider.value = 1;
-      rerenderIngredients();
+      rerenderIngredients(true);
     };
   }
 
@@ -1926,10 +2017,11 @@ function updateScaleDisplay(idx){
 }
 
 function closeDetail(){
-  overlay.classList.remove('open');
-  if(!shoppingListOverlay.classList.contains('open')){
-    document.body.style.overflow = '';
-  }
+  closeOverlayAnimated(overlay, () => {
+    if(!shoppingListOverlay.classList.contains('open')){
+      document.body.style.overflow = '';
+    }
+  });
   releaseWakeLock();
   if(lastFocusedEl){
     lastFocusedEl.focus();
@@ -2125,14 +2217,15 @@ const clearAllBtn = document.getElementById('clearAllBtn');
 
 function openShoppingList(){
   renderShoppingList();
-  shoppingListOverlay.classList.add('open');
+  openOverlayAnimated(shoppingListOverlay);
   document.body.style.overflow = 'hidden';
 }
 function closeShoppingList(){
-  shoppingListOverlay.classList.remove('open');
-  if(!overlay.classList.contains('open')){
-    document.body.style.overflow = '';
-  }
+  closeOverlayAnimated(shoppingListOverlay, () => {
+    if(!overlay.classList.contains('open')){
+      document.body.style.overflow = '';
+    }
+  });
 }
 
 shoppingListToggle.onclick = openShoppingList;
@@ -2168,7 +2261,7 @@ if(pageBackToTop){
 }
 
 renderFilters();
-renderGrid();
+renderGrid(true);
 </script>
 
 <style>
@@ -2184,6 +2277,15 @@ renderGrid();
 }
 
 *{ box-sizing: border-box; }
+
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 body{
   margin:0;
@@ -2210,7 +2312,11 @@ body{
     radial-gradient(circle at 65% 15%, rgba(0,0,0,0.3) 0px, transparent 2px),
     radial-gradient(circle at 25% 55%, rgba(0,0,0,0.25) 0px, transparent 2px);
   background-size: 300px 300px, 400px 400px, 250px 250px, 350px 350px, 280px 280px;
-  opacity: 0.9;
+  animation: speckleBreathe 9s ease-in-out infinite;
+}
+@keyframes speckleBreathe{
+  0%, 100%{ opacity: 0.82; }
+  50%{ opacity: 0.98; }
 }
 .hero-slab{ position:relative; z-index:1; }
 .eyebrow{
@@ -2301,12 +2407,13 @@ main{
   background: var(--surface);
   color: var(--stone-dark);
   cursor:pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
   display:flex;
   align-items:center;
   gap:6px;
 }
 .tool-btn:hover{ border-color: var(--brass); color: var(--brass); }
+.tool-btn:active{ transform: scale(0.96); }
 .tool-btn-active{
   border-color: var(--brass);
   color: var(--brass-dark);
@@ -2321,6 +2428,15 @@ main{
   border-radius: 100px;
   padding: 1px 7px;
   font-weight: 600;
+  display: inline-block;
+}
+.tool-badge.badge-bump{
+  animation: badgeBump 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes badgeBump{
+  0%{ transform: scale(1); }
+  40%{ transform: scale(1.35); }
+  100%{ transform: scale(1); }
 }
 .filter-btn{
   font-family:'IBM Plex Mono', monospace;
@@ -2332,9 +2448,10 @@ main{
   background: var(--surface);
   color: var(--stone-mid);
   cursor:pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease, transform 0.1s ease;
 }
 .filter-btn:hover{ border-color: var(--brass); color: var(--brass); }
+.filter-btn:active{ transform: scale(0.96); }
 .filter-btn.active{
   background: var(--brass);
   border-color: var(--brass);
@@ -2487,6 +2604,12 @@ main{
   height: 1px;
   background: linear-gradient(to right, var(--brass), var(--stone-light) 60%, transparent);
   opacity: 0.5;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.6s ease;
+}
+.category-separator.line-drawn::after{
+  transform: scaleX(1);
 }
 
 .card{
@@ -2498,21 +2621,42 @@ main{
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   position:relative;
 }
-.card:hover{
+.card:hover, .card:focus-visible{
   transform: translateY(-3px);
   box-shadow: 0 12px 24px rgba(0,0,0,0.45);
 }
-.card:hover::after{
+.card::after{
   content:"";
   position:absolute;
   top:0; right:0;
   width: 26px; height: 26px;
   background: var(--brass);
   clip-path: polygon(100% 0, 0 0, 100% 100%);
+  opacity: 0;
+  transform: translate(10px, -10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+.card:hover::after, .card:focus-visible::after{
+  opacity: 1;
+  transform: translate(0, 0);
 }
 .card:focus-visible{
   outline: 2px solid var(--brass);
   outline-offset: 2px;
+}
+
+/* Staggered entry animation - applied only on initial load / filter switch,
+   not on every search keystroke (see JS: renderGrid's animateEntry param) */
+.card.card-enter{
+  animation: cardEnter 0.4s ease both;
+}
+@keyframes cardEnter{
+  from{ opacity: 0; transform: translateY(14px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+.category-separator.card-enter{
+  animation: cardEnter 0.4s ease both;
 }
 .card-image{
   aspect-ratio: 1 / 1;
@@ -2772,12 +2916,14 @@ main{
   cursor:pointer;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s ease;
+  transform: translateY(10px) scale(0.92);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 .back-to-top-btn.visible{
   opacity: 1;
   pointer-events: auto;
+  transform: translateY(0) scale(1);
 }
 
 .page-back-to-top{
@@ -2795,16 +2941,17 @@ main{
   cursor:pointer;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(8px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: translateY(16px) scale(0.92);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 4px 16px rgba(0,0,0,0.5);
   z-index: 50;
 }
 .page-back-to-top.visible{
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
+.page-back-to-top:active{ transform: translateY(0) scale(0.94); }
 .page-back-to-top:hover{
   border-color: var(--brass-dark);
   color: var(--brass-dark);
@@ -2837,8 +2984,11 @@ main{
   justify-content:center;
   padding: 24px;
   z-index: 100;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 .overlay.open{ display:flex; }
+.overlay.overlay-visible{ opacity: 1; }
 
 .detail{
   background: var(--surface);
@@ -2848,6 +2998,13 @@ main{
   overflow-y:auto;
   border-radius: var(--radius);
   position:relative;
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+.overlay.overlay-visible .detail{
+  transform: scale(1);
+  opacity: 1;
 }
 .detail-image{
   aspect-ratio: 3 / 2;
@@ -2913,11 +3070,12 @@ main{
   border: 1.5px solid var(--stone-mid);
   border-radius: 4px;
   position: relative;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 .check-item.checked .check-box{
   background: var(--brass);
   border-color: var(--brass);
+  transform: scale(1.06);
 }
 .check-item.checked .check-box::after{
   content: "";
@@ -2928,14 +3086,28 @@ main{
   height: 8px;
   border: solid #18191B;
   border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+  transform: rotate(45deg) scale(1);
+  transform-origin: center;
+  animation: checkDraw 0.22s ease-out both;
+}
+@keyframes checkDraw{
+  from{ clip-path: inset(0 100% 0 0); }
+  to{ clip-path: inset(0 0 0 0); }
 }
 .check-item.checked .check-text{
   color: var(--stone-mid);
   opacity: 0.7;
+  transition: color 0.2s ease, opacity 0.2s ease;
 }
 .check-text{
   flex: 1 1 auto;
+}
+.check-text.qty-pulse{
+  animation: qtyPulse 0.5s ease;
+}
+@keyframes qtyPulse{
+  0%{ color: var(--brass-dark); }
+  100%{ color: inherit; }
 }
 .step-num{
   flex: 0 0 auto;
