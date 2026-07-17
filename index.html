@@ -1722,7 +1722,7 @@ function openDetail(idx, triggerEl){
         <div class="scale-row-top">
           <span class="scale-label">Scale recipe</span>
           <div class="scale-controls">
-            <span class="scale-value" id="scaleValue">1x</span>
+            <input type="text" inputmode="decimal" class="scale-value" id="scaleValue" value="1x" aria-label="Scale multiplier, type a number">
             <button class="scale-reset-btn" id="scaleResetBtn" type="button">Reset</button>
           </div>
         </div>
@@ -1799,14 +1799,39 @@ function openDetail(idx, triggerEl){
     renderDetailMeta(idx);
   };
 
+  const SCALE_MIN = 0.25;
+  const SCALE_MAX = 4;
+
   const scaleSlider = document.getElementById('scaleSlider');
+  const scaleValueInput = document.getElementById('scaleValue');
   const scaleResetBtn = document.getElementById('scaleResetBtn');
+
+  const commitScale = (raw) => {
+    const n = parseFloat(String(raw).replace(/x/i, '').trim());
+    if(Number.isNaN(n) || n <= 0){
+      // Invalid entry: just restore the current value rather than guessing
+      updateScaleDisplay(idx);
+      return;
+    }
+    state.scale = Math.min(SCALE_MAX, Math.max(SCALE_MIN, n));
+    if(scaleSlider) scaleSlider.value = state.scale;
+    rerenderIngredients();
+  };
+
   if(scaleSlider){
     scaleSlider.value = state.scale;
     scaleSlider.addEventListener('input', () => {
       state.scale = Number(scaleSlider.value);
       rerenderIngredients();
     });
+  }
+  if(scaleValueInput){
+    // Select the whole value on focus so typing a new number is a one-step replace
+    scaleValueInput.addEventListener('focus', () => scaleValueInput.select());
+    scaleValueInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){ e.preventDefault(); scaleValueInput.blur(); }
+    });
+    scaleValueInput.addEventListener('blur', () => commitScale(scaleValueInput.value));
   }
   if(scaleResetBtn){
     scaleResetBtn.onclick = () => {
@@ -1878,13 +1903,13 @@ function updateScaleDisplay(idx){
   const r = RECIPES[idx];
   const state = getChecklist(idx, r);
   const el = document.getElementById('scaleValue');
-  if(el){
+  if(el && document.activeElement !== el){
     const s = state.scale;
     // Show as few decimals as needed (up to 2) so e.g. 1.25x doesn't get
     // truncated to 1.3x, but a clean value like 2 still shows as "2x".
     const rounded = Math.round(s * 100) / 100;
     const label = Number.isInteger(rounded) ? String(rounded) : String(rounded.toFixed(2)).replace(/0$/, '').replace(/\.$/, '');
-    el.textContent = label + 'x';
+    el.value = label + 'x';
   }
   const slider = document.getElementById('scaleSlider');
   if(slider && Number(slider.value) !== state.scale){
@@ -2610,8 +2635,28 @@ main{
   font-family:'IBM Plex Mono', monospace;
   font-size: 13px;
   color: var(--brass-dark);
-  min-width: 36px;
+  width: 48px;
   text-align:center;
+  background: var(--surface);
+  border: 1px solid var(--stone-light);
+  border-radius: 100px;
+  padding: 4px 6px;
+  cursor: text;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.scale-value:hover{
+  border-color: var(--brass);
+}
+.scale-value:focus{
+  outline: none;
+  border-color: var(--brass);
+  color: var(--brass);
+}
+/* Hide native number-style spinners in case a browser applies them via inputmode */
+.scale-value::-webkit-outer-spin-button,
+.scale-value::-webkit-inner-spin-button{
+  -webkit-appearance: none;
+  margin: 0;
 }
 .scale-reset-btn{
   font-family:'IBM Plex Mono', monospace;
